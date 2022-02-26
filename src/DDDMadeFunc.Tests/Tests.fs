@@ -1,8 +1,13 @@
-module Tests
+module CostumerInfoDtoTest 
 
 open System
 open Xunit
+open OrderTaking.Common
+open OrderTaking.PlaceOrder
+open Xunit
 
-[<Fact>]
+//TODO: ADICIONAR GIT IGNORE PARA NCRUNCH
+
+[<Fact(DisplayName = nameof(CustomerInfoDto.toCustumerInfo))>]
 let ``My test`` () =
-    Assert.True(true)
+    Assert.True(false)
