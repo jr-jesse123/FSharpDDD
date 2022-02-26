@@ -16,7 +16,7 @@ type VipStatus =
     | VIP
 
 /// A Zip code
-type ZipCode = private ZipCode of String50
+type ZipCode = private ZipCode of String
 
 /// A US 2 letter state code
 type UsStateCode = private UsStateCode of string
@@ -53,6 +53,10 @@ type Price = private Price of decimal
 /// Constrained to be a decimal between 0.0 and 1000.0
 type BillingAmount = private BillingAmount of decimal
 
+
+
+
+
 type PdfAttachment = {
     Name : string
     Bytes: Byte[]
@@ -72,7 +76,9 @@ module ConstrainedTypes =
     let (|TooLong|_|) maxLen (str: string) =
         if str.Length > maxLen then Some str else None
    
-    
+    let (|StartsWith|_|) (txtToBegin: string) (txtToCheck: string) = 
+        if txtToCheck.StartsWith(txtToBegin) then Some txtToCheck else None
+
     /// Create a constrained string using the constructor provided if the input isnot too big or null/empty
     let createString fieldName ctor maxLen str = 
         // if String.IsNullOrEmpty str then
@@ -187,3 +193,144 @@ module VipStatus =
 
     
 
+module ZipCode = 
+    /// Return the string value inside a ZipCode
+    let value (ZipCode str) = str
+
+    /// Create a ZipCode from a string
+    /// Return Error if input is null, empty, or doesn´t have 5 digits
+    let create fieldName str = 
+        let pattern = "\d{5}"
+        ConstrainedTypes.createLike fieldName ZipCode pattern str
+
+module UsStateCode = 
+
+    /// Return the string value inside a UsStateCode
+    let value (UsStateCode str) = str
+
+    /// Create a UsStateCode from a string
+    /// Return Error if input is null, empty, or desn´t have 2 letters
+    let create fieldName str = 
+        let pattern = "^(A[KLRZ]|C[AOT]|D[CE]|FL|GA|HI|I[ADLN]|K[SY]|LA|M[ADEINOST]|N[CDEHJMVY]|O[HKR]|P[AR]|RI|S[CD]|T[NX]|UT|V[AIT]|W[AIVY])$"
+        ConstrainedTypes.createLike fieldName UsStateCode pattern str
+
+module OrderId = 
+    /// Return the string value inside an OrderId
+    let value (OrderId str) = str
+
+    /// Create an OrderId from a string
+    /// Return Error if input is null, empty, or length > 50
+    let create fieldName str =
+        ConstrainedTypes.createString fieldName OrderId 50 str
+    
+
+module WidgetCode = 
+    
+    /// Return the string value inside a WidgetCode
+    let value (WidgetCode code) = code
+
+    /// Create an WidgetCode from a string
+    /// Return Error if input is null. empty, or not mathcing patter
+    let create fieldName code = 
+        let pattern = "W\d{4}"
+        ConstrainedTypes.createLike fieldName WidgetCode pattern code
+
+
+module GizmoCode = 
+
+    /// Return the string value inside a GizmoCode
+    let value (GizmoCode code) = code
+
+    /// Create an Gizmocode from a string
+    /// Return Error if input is null, empty, or not matching pattern
+    let create fieldName code = 
+        let pattern = "G\d{3}"
+        ConstrainedTypes.createLike fieldName GizmoCode pattern code 
+
+module ProductCode =
+    /// Return the string value inside a ProductCode 
+    let value productCode = 
+        match productCode with
+        | Widget (WidgetCode wc) -> wc
+        | Gizmo (GizmoCode gc) -> gc
+
+
+    /// Create an ProductCode from a string
+    /// Return Error if input not mathing pattern
+    let create fieldName code = 
+        match code with
+        | ConstrainedTypes.NullOrEmpty _ -> 
+            sprintf "%s: Must not be null or empty" fieldName |> Error 
+        
+        | ConstrainedTypes.StartsWith "W" code ->
+            WidgetCode.create fieldName code |> Result.map Widget
+        
+        | ConstrainedTypes.StartsWith "G" code ->   
+            GizmoCode.create fieldName code |> Result.map Gizmo
+            
+        | _ -> sprintf "%s: Format no recognized '%s'" fieldName code |> Error
+    
+module KilogramQuantity =
+
+    /// Return the value inside a KilogramQuantity
+    let value (KilogramQuantity v) = v
+
+    /// Create a KilogramQuatnity from a decimal.
+    /// Return Error if input is not a decimal between 0.05 and 100.0
+    let create fieldName v = 
+        ConstrainedTypes.createDecimal fieldName KilogramQuantity 0.05M 100M v
+
+
+module UnitQuantity =
+    
+    /// Return the value inside a UnitQuantity
+    let value (UnitQuantity v) = v
+
+    /// Create a Unitquantity from a int
+    /// Return erro if input is not an integer between 1 and 1000
+    let create fieldName v = 
+        ConstrainedTypes.createInt fieldName UnitQuantity 1 1000 v
+
+
+
+module OrderQuantity = 
+
+    /// Return the value inside a OrderQuantity
+    let value qty = 
+        match qty with
+        | Unit uq -> uq |> UnitQuantity.value |> decimal
+        | Kilogram kq -> KilogramQuantity.value kq 
+
+
+module Price = 
+
+    /// Return the value inside a Price
+    let value (Price v) = v
+
+    /// Create a Price from a decimal.
+    /// Return Error if input is not a decimal between 0.0 and 1000.00
+    let create v = ConstrainedTypes.createDecimal "Price" Price 0.0M 1000.00M v
+
+    // /// Create a price from a decimal.
+    // /// throw an exception if out of bounds. This should only be used if you know de value is valid.
+    // let unsafeCreate v = 
+    //     match create v with
+    //     | Ok price -> price
+    //     | Error err -> failwithf "not expecting Price to be out of bounds: %s" err
+        
+    // /// Multiply a Price by a decimal qty.
+    // /// Return Error if new price is out of bounds.
+    // let multiply qty (Price p) =
+    //     create (qty * p)
+    
+
+module BillingAmount =
+    /// Return a value wrapped in a BillingAmount
+    let value (BillingAmount v) = v
+
+    /// Create a BillingAmount from a decimal.
+    /// Return Error if input is not a decimal between 0.0 and 10000.00
+    let create v =
+        ConstrainedTypes.createDecimal "BillingAmount" BillingAmount 0.0M  10000.00M v 
+
+    
