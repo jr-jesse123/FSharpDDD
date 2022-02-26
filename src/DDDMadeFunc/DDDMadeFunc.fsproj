@@ -11,6 +11,6 @@
     <Compile Include="PlaceOrder.InternalTypes.fs" />
     <Compile Include="PlaceOrder.Implementations.fs" />
     <Compile Include="PlaceOrder.Dto.fs" />
-    <Compile Include="Library.fs" />
+    <Compile Include="AssemblyInfo.fs" />
   </ItemGroup>
 </Project>

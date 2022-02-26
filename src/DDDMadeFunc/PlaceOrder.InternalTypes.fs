@@ -1,7 +1,7 @@
 module internal OrderTaking.PlaceOrder.InternalTypes
 
 open OrderTaking.Common
-open OrderTaking.PlacinOrder
+open OrderTaking.PlaceOrder
 
 
 // =======================================================

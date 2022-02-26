@@ -1,9 +1,3 @@
-open OrderTaking.Common
-
-
-open OrderTaking.Common
-
-
 namespace OrderTaking.Common
 open System
 
