@@ -8,7 +8,7 @@ open System
 type String50 = private String50 of string
 
 /// An email addres
-type EmailAdrres = private EmailAddress of string
+type EmailAddress = private EmailAddress of string
 
 /// Costumer´s VIP status
 type VipStatus = 
