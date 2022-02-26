@@ -1,75 +1,7 @@
 namespace OrderTaking.Common
-
-// Simple types and constrained types related to the  orderTaking domain
-
 open System
 
-/// Constrained to be 50 chars or less, not null
-type String50 = private String50 of string
-
-/// An email addres
-type EmailAddress = private EmailAddress of string
-
-/// Costumer´s VIP status
-type VipStatus = 
-    | Normal
-    | VIP
-
-/// A Zip code
-type ZipCode = private ZipCode of String
-
-/// A US 2 letter state code
-type UsStateCode = private UsStateCode of string
-
-//TODO: think about change the inner OrderId to use Guid 
-/// An Id for Orders. Constrained to be a non-empty string < 10
-type OrderId = private OrderId of string
-
-/// The codes for Widgets start with a "W" and then four digits
-type WidgetCode = private WidgetCode of string
-
-/// The codes for Gizmos start with a "G" and then three digits. 
-type GizmoCode = private GizmoCode of string
-
-
-type ProductCode = 
-    | Widget of WidgetCode
-    | Gizmo of GizmoCode
-
-/// Constrained to be a integer between 1 and 1000
-type UnitQuantity = private UnitQuantity of int
-
-/// Constrained to be a decimal between 0.05 and 100.0
-type KilogramQuantity = private KilogramQuantity of decimal
-
-type OrderQuantity = 
-    | Unit of UnitQuantity
-    | Kilogram of KilogramQuantity
-
-
-/// Constrained to be a decimal between 0.0 and 1000.0
-type Price = private Price of decimal
-
-/// Constrained to be a decimal between 0.0 and 1000.0
-type BillingAmount = private BillingAmount of decimal
-
-
-
-
-
-type PdfAttachment = {
-    Name : string
-    Bytes: Byte[]
-}
-
-type PromotionCode = PromotionCode of string
-
-
-//======================================
-// Reusable constructors and getters for constrained types
-//======================================
-
-/// Useful functions for constrained types 
+//TODO: move this helper functions to another file where it doesn´t colide with domain types 
 module ConstrainedTypes = 
     let (|NullOrEmpty|_|)  str = 
         if String.IsNullOrEmpty str then Some str else None
@@ -149,6 +81,90 @@ module ConstrainedTypes =
             sprintf "%s: '%s' must match the pattern '%s" fieldName str pattern
             |> Error
 
+// =====================================================================
+// Simple types and constrained types related to the  orderTaking domain
+// =====================================================================
+
+/// Constrained to be 50 chars or less, not null
+type String50 = private String50 of string
+
+/// An email addres
+type EmailAddress = private EmailAddress of string
+
+/// Costumer´s VIP status
+type VipStatus = 
+    | Normal
+    | VIP
+
+/// A Zip code
+type ZipCode = private ZipCode of String
+
+/// A US 2 letter state code
+type UsStateCode = private UsStateCode of string
+
+//TODO: think about change the inner OrderId to use Guid 
+/// An Id for Orders. Constrained to be a non-empty string < 10
+type OrderId = private OrderId of string
+
+
+//TODO: think about change the inner OrderId to use Guid 
+//TODO: this type is using methods instead of module functions because I want to know if there
+//will any diference on the workflow composition but should be removed from here so it does not 
+//disturb the domain vision
+/// An Id for OrderLines. Constrained to be a non-empty string < 10 chars
+type OrderLineId = private OrderLineId of string
+with 
+    member this.value = 
+        this |> function |OrderLineId str -> str
+    static member create fieldName str = 
+        ConstrainedTypes.createString fieldName OrderLineId 10 str
+
+/// The codes for Widgets start with a "W" and then four digits
+type WidgetCode = private WidgetCode of string
+
+/// The codes for Gizmos start with a "G" and then three digits. 
+type GizmoCode = private GizmoCode of string
+
+
+type ProductCode = 
+    | Widget of WidgetCode
+    | Gizmo of GizmoCode
+
+/// Constrained to be a integer between 1 and 1000
+type UnitQuantity = private UnitQuantity of int
+
+/// Constrained to be a decimal between 0.05 and 100.0
+type KilogramQuantity = private KilogramQuantity of decimal
+
+type OrderQuantity = 
+    | Unit of UnitQuantity
+    | Kilogram of KilogramQuantity
+
+
+/// Constrained to be a decimal between 0.0 and 1000.0
+type Price = private Price of decimal
+
+/// Constrained to be a decimal between 0.0 and 1000.0
+type BillingAmount = private BillingAmount of decimal
+
+
+
+
+
+type PdfAttachment = {
+    Name : string
+    Bytes: Byte[]
+}
+
+type PromotionCode = PromotionCode of string
+
+
+//======================================
+// Reusable constructors and getters for constrained types
+//======================================
+
+/// Useful functions for constrained types 
+
 module String50 =
     /// Return the value inside a String50
     let value (String50 str) = str
@@ -223,6 +239,8 @@ module OrderId =
     let create fieldName str =
         ConstrainedTypes.createString fieldName OrderId 50 str
     
+
+
 
 module WidgetCode = 
     
