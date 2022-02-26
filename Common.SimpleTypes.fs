@@ -334,3 +334,7 @@ module BillingAmount =
         ConstrainedTypes.createDecimal "BillingAmount" BillingAmount 0.0M  10000.00M v 
 
     
+    /// Sum a list of prices to make a billing amount
+    /// Return Error if total is out of bounds
+    let sumPrices prices = 
+        prices |> List.map Price.value |> List.sum |> create 
