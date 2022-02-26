@@ -15,7 +15,7 @@ open System
 
 
 type PersonalName = {
-    FirsName: String50
+    FirstName: String50
     LastName: String50
 }
 

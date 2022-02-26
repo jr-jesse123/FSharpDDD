@@ -1,3 +1,9 @@
+open OrderTaking.Common
+
+
+open OrderTaking.Common
+
+
 namespace OrderTaking.Common
 open System
 
@@ -171,6 +177,7 @@ module String50 =
 
     /// Create an String50 from a string
     /// Return Error fi input is null, empty, or lenght > 50
+    //TODO: think about remove the fieldName from this function
     let create fieldName str =
         ConstrainedTypes.createString fieldName String50 50 str
 
@@ -182,7 +189,7 @@ module String50 =
         ConstrainedTypes.createStringOption fieldName String50 50 str
 
 
-module EmailAdrres =
+module EmailAddress =
     /// Return the string value inside an EmailAdress
     let value (EmailAddress str) = str
 
@@ -195,18 +202,23 @@ module EmailAdrres =
 
 module VipStatus =
     
+    //TODO: think aboute standardize this helper to value
     let toString status = 
         match status with
         | Normal -> "Normal"
         | VIP -> "VIP"
 
+    //TODO: think aboute standardize this helper to create
     let fromString fieldName str = 
         match str with
         | "Normal" | "normal" -> Ok Normal 
         | "vip" | "VIP" -> Ok VIP
         | _ ->  sprintf "%s: Must be one of 'normal', 'VIP'" fieldName |> Error
-            
 
+//TODO: think about applying this stile to all types            
+type VipStatus with
+    member this.value = VipStatus.toString this
+    
     
 
 module ZipCode = 
