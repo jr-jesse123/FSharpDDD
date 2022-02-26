@@ -4,13 +4,12 @@
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="PlaceOrder.Implementations.fs" />
     <Compile Include="Result.fs" />
     <Compile Include="Common.SimpleTypes.fs" />
     <Compile Include="Common.CompoundTypes.fs" />
     <Compile Include="PlaceOrder.PublicTypes.fs" />
     <Compile Include="PlaceOrder.InternalTypes.fs" />
-    <Compile Include="PlaceOrder.Implementations.fs" />
-    <Compile Include="PlaceOrder.Dto.fs" />
     <Compile Include="Library.fs" />
   </ItemGroup>
 </Project>

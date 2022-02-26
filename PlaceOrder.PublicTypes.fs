@@ -1,4 +1,4 @@
-namespace OrderTaking.PlacinOrder
+namespace OrderTaking.PlaceOrder
 
 open OrderTaking.Common
 
