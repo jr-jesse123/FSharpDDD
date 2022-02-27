@@ -24,27 +24,14 @@ type validCustomerInfoDtoArb =
         }
         |> Arb.fromGen
 
-[<Property(DisplayName = "Valides" + nameof(CustomerInfoDto) + "can be to Domain and converted back",
-    Arbitrary = [|typeof<validCustomerInfoDtoArb>|])>]
-let ``My test`` x =
-    
-    printfn "%A" x
 
+[<Property(Arbitrary = [|typeof<validCustomerInfoDtoArb>|])>]
+let ``Valide CustomerInfoDto can be converted to Domain and back and are still the same"`` customerDto =
+    
     result {
-        let! out = CustomerInfoDto.toCustumerInfo x
+        let! out = CustomerInfoDto.toCustomerInfo customerDto
         let nvDto = CustomerInfoDto.fromCustomerInfo out
-        return nvDto = x
+        return nvDto = customerDto
     }
     |> function |Ok v -> v
     
-    
-    
-
-    
-    
-
-    //let prop (Superint x) = 
-    //    //printfn "%A" x
-    //    x > 20
-    
-    //Check.QuickThrowOnFailure prop

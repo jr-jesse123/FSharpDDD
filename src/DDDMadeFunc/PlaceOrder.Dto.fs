@@ -22,13 +22,7 @@ module internal Utils =
         //| None -> defaultValue
         Option.defaultWith defaultValue opt
 
-
-type CustomerInfoDto = {
-    FirstName : string
-    LastName : string
-    EmailAddress : string
-    VipStatus : string        
-}    
+ 
 
 [<RequireQualifiedAccess>]
 module Result =
@@ -52,6 +46,7 @@ module Result =
     
     let isOk = function |Ok _ -> true |Error _ -> false
 
+
 [<AutoOpen>]
 module ResultComputationExpression  = 
 
@@ -66,6 +61,17 @@ module ResultComputationExpression  =
 
     let result = new ResultBuilder()
 
+
+
+
+
+type CustomerInfoDto = {
+    FirstName : string
+    LastName : string
+    EmailAddress : string
+    VipStatus : string        
+}   
+
 /// Functions for coverting between the DTO and corresponding domain object
 // TODO: thing about changin the names to toDomain and fromDoamin standards
 // TODO: TEST automapper implementation
@@ -79,7 +85,7 @@ module internal CustomerInfoDto =
             VipStatus = dto.VipStatus
         }
 
-    let toCustumerInfo (dto:CustomerInfoDto)  =
+    let toCustomerInfo (dto:CustomerInfoDto)  =
         result {
                let! first = dto.FirstName |> String50.create "FirstName"
                let! last = dto.LastName |> String50.create "LastName"
@@ -101,7 +107,6 @@ module internal CustomerInfoDto =
         }
 
 
-        
-
-
-
+type CustomerInfoDto with
+    //static member FromCustumerInfo = CustomerInfoDto.fromCustomerInfo
+    member this.ToCustomerInfo () = CustomerInfoDto.toCustomerInfo this
