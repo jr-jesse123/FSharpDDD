@@ -42,9 +42,9 @@ type UnvalidatedOrderLine = {
 
 type UnvalidatedOrder = {
     OrderId : string
-    CostumerInfo : UnvalidatedCostumerInfo
+    CustomerInfo : UnvalidatedCostumerInfo
     ShippingAddress : UnvalidatedAddress
-    BillingAddres : UnvalidatedAddress
+    BillingAddress : UnvalidatedAddress
     Lines : UnvalidatedOrderLine list
     PromotionCode : string
 }

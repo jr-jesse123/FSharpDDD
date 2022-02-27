@@ -64,8 +64,8 @@ type PricedOrderProductLine = {
 }
 
 type PricedOrderLine = 
-    | PorudctLine of PricedOrderProductLine
-    | ComentLine of string
+    | ProductLine of PricedOrderProductLine
+    | CommentLine of string
 
 
 type PricedOrder =  {

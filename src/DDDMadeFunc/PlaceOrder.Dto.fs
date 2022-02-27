@@ -16,11 +16,11 @@ open System.Linq
 module internal Utils = 
     
     //TODO: think about changin this to the defaulvalue function
-    let defaultIfNone defaultValue opt = 
+    let defaultIfNone defaultValue  = 
         //match opt with
         //| Some v -> v
         //| None -> defaultValue
-        Option.defaultWith defaultValue opt
+        Option.defaultValue defaultValue 
 
  
 
@@ -193,6 +193,107 @@ module internal AddressDto =
                 Country = country
                 }
             return address
+        }
+
+        //TODO: try a value CE
+    let fromAddress (domainObj:Address) : AddressDto =
+        {
+            AddressLine1 = domainObj.AddressLine1 |> String50.value
+            AddressLine2 = domainObj.AddressLine2 |> Option.map String50.value |> defaultIfNone null
+            AddressLine3 = domainObj.AddressLine3 |> Option.map String50.value |> defaultIfNone null
+            AddressLine4 = domainObj.AddressLine4 |> Option.map String50.value |> defaultIfNone null
+            City = domainObj.City |> String50.value
+            ZipCode = domainObj.ZipCode |> ZipCode.value
+            State  = domainObj.ZipCode |> ZipCode.value
+            Country = domainObj.Country |> String50.value
+        }
+     
+     
+
+//===============================================
+// DTOs for OrderLines
+//===============================================
+
+/// From the order form used as input
+type OrderFormLineDto = {
+    OrderLineId : string
+    ProductCode : string
+    Quantity : decimal
+}
+
+/// Functions relating to the OrderLine DTOs
+module internal OrderLineDto = 
+    
+    /// Convert the OrderFormline into a UnvalidatedOrderLine
+    let toUnvalidatedOrderLine (dto:OrderFormLineDto) : UnvalidatedOrderLine = 
+        {
+            OrderLineId = dto.OrderLineId
+            ProductCode = dto.ProductCode
+            Quantity = dto.Quantity
+        }
+
+
+
+//===============================================
+// DTOs for PricedOrderLines
+//===============================================
+
+/// Used in the output of the workflow
+type PricedOrderLineDto = {
+    OrderLineId : string
+    ProductCode : string
+    Quantity : decimal
+    LinePrice : decimal
+    Comment : string
+}
+
+module internal PricedOrderLineDto = 
+    
+    
+    let fromDomain (domainObj:PricedOrderLine) : PricedOrderLineDto =
+        match domainObj with
+        | ProductLine line ->
+            {
+                OrderLineId = line.OrderLineId.value
+                ProductCode = line.ProductCode.value
+                Quantity = line.Quantity.value
+                LinePrice = line.LinePrice.value
+                Comment = ""
+            }
+        | CommentLine comment ->
+            {
+                OrderLineId = null
+                ProductCode = null
+                Quantity = 0M
+                LinePrice = 0M
+                Comment = comment
+            }
+
+
+
+//===============================================
+// DTO for OrderForm
+//===============================================
+type OrderFormDto =  {
+    OrderId : string
+    CustomerInfo : CustomerInfoDto
+    ShippingAddress : AddressDto
+    BillingAddress : AddressDto
+    Lines : OrderFormLineDto list
+    PromotionCode : string
+}
+
+
+/// Functions relating to the Order DTOs
+module internal OrderFormDto = 
+    
+    let toUnvalidatedOrder (dto:OrderFormDto) : UnvalidatedOrder =
+        {
+            OrderId = dto.OrderId
+            CustomerInfo = dto.CustomerInfo |> CustomerInfoDto.toUnvalidatedCustomerInfo
+            ShippingAddress = dto.ShippingAddress |> AddressDto.toUnvalidatedAddress
+            BillingAddress = dto.BillingAddress |> AddressDto.toUnvalidatedAddress
+            Lines = dto.Lines |> List.map  OrderLineDto.toUnvalidatedOrderLine
+            PromotionCode = dto.PromotionCode
 
         }
-        

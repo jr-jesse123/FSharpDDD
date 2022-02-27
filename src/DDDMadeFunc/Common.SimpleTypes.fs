@@ -113,11 +113,7 @@ type OrderId = private OrderId of string
 //disturb the domain vision
 /// An Id for OrderLines. Constrained to be a non-empty string < 10 chars
 type OrderLineId = private OrderLineId of string
-with 
-    member this.value = 
-        this |> function |OrderLineId str -> str
-    static member create fieldName str = 
-        ConstrainedTypes.createString fieldName OrderLineId 10 str
+
 
 /// The codes for Widgets start with a "W" and then four digits
 type WidgetCode = private WidgetCode of string
@@ -182,6 +178,8 @@ module String50 =
     let createOption fieldName str =
         ConstrainedTypes.createStringOption fieldName String50 50 str
 
+type String50 with 
+    member  this.value = String50.value this
 
 module EmailAddress =
     /// Return the string value inside an EmailAdress
@@ -193,6 +191,8 @@ module EmailAddress =
         let pattern = ".+@.+" 
         ConstrainedTypes.createLike fieldName EmailAddress pattern str
 
+type EmailAddress with
+    member this.value = EmailAddress.value this
 
 module VipStatus =
     
@@ -225,6 +225,9 @@ module ZipCode =
         let pattern = "\d{5}"
         ConstrainedTypes.createLike fieldName ZipCode pattern str
 
+type ZipCode with
+    member this.value = ZipCode.value this
+
 module UsStateCode = 
 
     /// Return the string value inside a UsStateCode
@@ -236,6 +239,10 @@ module UsStateCode =
         let pattern = "^(A[KLRZ]|C[AOT]|D[CE]|FL|GA|HI|I[ADLN]|K[SY]|LA|M[ADEINOST]|N[CDEHJMVY]|O[HKR]|P[AR]|RI|S[CD]|T[NX]|UT|V[AIT]|W[AIVY])$"
         ConstrainedTypes.createLike fieldName UsStateCode pattern str
 
+
+type UsStateCode with
+    member this.value = UsStateCode.value this
+
 module OrderId = 
     /// Return the string value inside an OrderId
     let value (OrderId str) = str
@@ -245,7 +252,8 @@ module OrderId =
     let create fieldName str =
         ConstrainedTypes.createString fieldName OrderId 50 str
     
-
+type OrderId with
+    member this.value = OrderId.value this
 
 
 module WidgetCode = 
@@ -259,6 +267,8 @@ module WidgetCode =
         let pattern = "W\d{4}"
         ConstrainedTypes.createLike fieldName WidgetCode pattern code
 
+type WidgetCode with
+    member this.value = WidgetCode.value this
 
 module GizmoCode = 
 
@@ -270,6 +280,10 @@ module GizmoCode =
     let create fieldName code = 
         let pattern = "G\d{3}"
         ConstrainedTypes.createLike fieldName GizmoCode pattern code 
+
+
+type GizmoCode with
+    member this.value = GizmoCode.value this
 
 module ProductCode =
     /// Return the string value inside a ProductCode 
@@ -294,6 +308,20 @@ module ProductCode =
             
         | _ -> sprintf "%s: Format no recognized '%s'" fieldName code |> Error
     
+
+
+type ProductCode with
+    member this.value = ProductCode.value this
+
+
+module OrderLineId = 
+    let  create fieldName str =  ConstrainedTypes.createString fieldName OrderLineId 10 str
+    let value (OrderLineId id) =  id
+
+type OrderLineId with 
+    member this.value = OrderLineId.value this
+    
+
 module KilogramQuantity =
 
     /// Return the value inside a KilogramQuantity
@@ -303,6 +331,10 @@ module KilogramQuantity =
     /// Return Error if input is not a decimal between 0.05 and 100.0
     let create fieldName v = 
         ConstrainedTypes.createDecimal fieldName KilogramQuantity 0.05M 100M v
+
+
+type KilogramQuantity with
+    member this.value = KilogramQuantity.value this
 
 
 module UnitQuantity =
@@ -316,6 +348,10 @@ module UnitQuantity =
         ConstrainedTypes.createInt fieldName UnitQuantity 1 1000 v
 
 
+type UnitQuantity with
+    member this.value = UnitQuantity.value this
+
+
 
 module OrderQuantity = 
 
@@ -324,6 +360,10 @@ module OrderQuantity =
         match qty with
         | Unit uq -> uq |> UnitQuantity.value |> decimal
         | Kilogram kq -> KilogramQuantity.value kq 
+
+
+type OrderQuantity with
+    member this.value = OrderQuantity.value this
 
 
 module Price = 
@@ -348,6 +388,11 @@ module Price =
     //     create (qty * p)
     
 
+type Price with
+    member this.value = Price.value this
+
+
+
 module BillingAmount =
     /// Return a value wrapped in a BillingAmount
     let value (BillingAmount v) = v
@@ -362,3 +407,8 @@ module BillingAmount =
     /// Return Error if total is out of bounds
     let sumPrices prices = 
         prices |> List.map Price.value |> List.sum |> create 
+
+
+type BillingAmount with
+    member this.value = BillingAmount.value this
+

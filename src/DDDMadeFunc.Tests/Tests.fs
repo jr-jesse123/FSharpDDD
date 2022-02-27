@@ -35,3 +35,15 @@ let ``Valide CustomerInfoDto can be converted to Domain and back and are still t
     }
     |> function |Ok v -> v
     
+
+
+[<Property>]
+let ``InValide CustomerInfoDto can be converted to Domain and back and are still the same"`` customerDto =
+    
+    CustomerInfoDto.toCustomerInfo customerDto
+    //|> fun x -> printfn "%A" x ; x
+    |>  Result.isOk |> not
+    
+
+
+    
