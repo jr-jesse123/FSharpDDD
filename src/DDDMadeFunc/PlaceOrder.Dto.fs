@@ -49,7 +49,8 @@ module Result =
         match result with
         | Ok success -> f success 
         | Error err -> Error err
-    ()    
+    
+    let isOk = function |Ok _ -> true |Error _ -> false
 
 [<AutoOpen>]
 module ResultComputationExpression  = 
