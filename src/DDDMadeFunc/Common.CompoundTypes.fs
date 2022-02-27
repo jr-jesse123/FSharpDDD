@@ -30,10 +30,10 @@ type CustomerInfo = {
 // ====================
 
 type Address = {
-    AddresLine1 : String50
-    AddresLine2 : String50 option
-    AddresLine3 : String50 option
-    AddresLine4 : String50 option
+    AddressLine1 : String50
+    AddressLine2 : String50 option
+    AddressLine3 : String50 option
+    AddressLine4 : String50 option
     City: String50
     ZipCode: ZipCode
     State: UsStateCode

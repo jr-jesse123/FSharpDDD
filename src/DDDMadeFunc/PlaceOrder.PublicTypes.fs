@@ -24,10 +24,10 @@ type UnvalidatedCostumerInfo = {
 
 
 type UnvalidatedAddress = {
-    AddresLine1 : string
-    AddresLine2 : string
-    AddresLine3 : string
-    AddresLine4 : string
+    AddressLine1 : string
+    AddressLine2 : string
+    AddressLine3 : string
+    AddressLine4 : string
     City: string
     ZipCode: string
     State: string
