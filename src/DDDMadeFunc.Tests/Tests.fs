@@ -43,6 +43,19 @@ let ``InValide CustomerInfoDto can be converted to Domain and back and are still
     CustomerInfoDto.toCustomerInfo customerDto
     //|> fun x -> printfn "%A" x ; x
     |>  Result.isOk |> not
+
+
+
+[<Property>]
+let ``CostumerInfoDtocan be converted to InValidatedCustomerInfoDto and back and are still the same using Automapper"`` 
+    customerDto =
+    
+    let out = CustomerInfoDto.toUnvalidatedCustomerInfo2 customerDto
+    
+    out.FirstName = customerDto.FirstName && out.LastName = customerDto.LastName 
+    && out.EmailAddress = customerDto.EmailAddress && out.VipStatus = customerDto.VipStatus
+
+    
     
 
 

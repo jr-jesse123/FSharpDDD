@@ -8,6 +8,7 @@ open OrderTaking.PlaceOrder.InternalTypes
 open System
 open System.Linq
 
+
 // ==================================
 // DTOs for PlaceOrder workflow
 // ==================================
@@ -89,18 +90,41 @@ type CustomerInfoDto = {
     VipStatus : string        
 }   
 
+open AutoMapper
 /// Functions for coverting between the DTO and corresponding domain object
 // TODO: thing about changin the names to toDomain and fromDoamin standards
 // TODO: TEST automapper implementation
 module internal CustomerInfoDto = 
+    
+    //type CustomerInfoDtoProfile() as this =
+    //    inherit Profile()
+    //    do 
+    //        this
+    //            .CreateMap<CustomerInfoDto,UnvalidatedCostumerInfo>()
+    //            .ReverseMap() 
+    //        |> ignore
+        
+    let mapConfig = new MapperConfiguration(
+        fun cfg -> 
+            cfg.CreateMap<CustomerInfoDto,UnvalidatedCostumerInfo>()
+               .ReverseMap()
+            |> ignore)
+    
+    let mapper = mapConfig.CreateMapper()
 
-    let toUnvalidatedCustomerInfo (dto:CustomerInfoDto) : UnvalidatedCostumerInfo =
-        {
-            FirstName = dto.FirstName
-            LastName = dto.LastName
-            EmailAddress = dto.EmailAddress
-            VipStatus = dto.VipStatus
-        }
+    do mapConfig.AssertConfigurationIsValid();
+    
+    let toUnvalidatedCustomerInfo2 (dto:CustomerInfoDto) : UnvalidatedCostumerInfo =
+        mapper.Map<CustomerInfoDto,UnvalidatedCostumerInfo>(dto)
+    
+
+    //let toUnvalidatedCustomerInfo (dto:CustomerInfoDto) : UnvalidatedCostumerInfo =
+    //    {
+    //        FirstName = dto.FirstName
+    //        LastName = dto.LastName
+    //        EmailAddress = dto.EmailAddress
+    //        VipStatus = dto.VipStatus
+    //    }
     
     //TODO: USE APPLICATIVE VALIDATION
     let toCustomerInfo (dto:CustomerInfoDto)  =
@@ -290,7 +314,7 @@ module internal OrderFormDto =
     let toUnvalidatedOrder (dto:OrderFormDto) : UnvalidatedOrder =
         {
             OrderId = dto.OrderId
-            CustomerInfo = dto.CustomerInfo |> CustomerInfoDto.toUnvalidatedCustomerInfo
+            CustomerInfo = dto.CustomerInfo |> CustomerInfoDto.toUnvalidatedCustomerInfo2
             ShippingAddress = dto.ShippingAddress |> AddressDto.toUnvalidatedAddress
             BillingAddress = dto.BillingAddress |> AddressDto.toUnvalidatedAddress
             Lines = dto.Lines |> List.map  OrderLineDto.toUnvalidatedOrderLine
