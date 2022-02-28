@@ -154,5 +154,5 @@ type AcknowledgeOrder =
 // Create events
 // ------------------
 
-type CreateEvents = PricedOrder -> OrderAknowledgmentSent option -> PlacedOrderEvent list
+type CreateEvents = PricedOrder -> OrderAcknowledgmentSent option -> PlaceOrderEvent list
 

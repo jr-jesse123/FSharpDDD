@@ -1,4 +1,5 @@
-﻿namespace OrderTaking.PlaceOrder
+﻿
+namespace OrderTaking.PlaceOrder
 
 open System.Collections.Generic
 
@@ -319,5 +320,116 @@ module internal OrderFormDto =
             BillingAddress = dto.BillingAddress |> AddressDto.toUnvalidatedAddress
             Lines = dto.Lines |> List.map  OrderLineDto.toUnvalidatedOrderLine
             PromotionCode = dto.PromotionCode
-
         }
+
+
+//===============================================
+// DTO for ShippableOrderPlaced event
+//===============================================
+type ShippableOrderLineDto = {
+    ProductCode : string
+    Quantity : decimal
+}
+
+type ShippableOrderPlacedDto = {
+    OrderId : string
+    ShippingAddress : AddressDto
+    ShipmentLines : ShippableOrderLineDto list
+}
+
+module internal ShippableOrderPlacedDto = 
+    
+    let fromShippableOrderLine (domainObj: ShippableOrderLine) : ShippableOrderLineDto =
+        {
+            ProductCode = domainObj.ProductCode.value
+            Quantity = domainObj.Quantity.value
+        }
+
+    let fromDomain (domainObj: ShippableOrderPlaced) : ShippableOrderPlacedDto =
+        {
+            OrderId = domainObj.OrderId.value
+            ShippingAddress = domainObj.ShippingAddress |> AddressDto.fromAddress
+            ShipmentLines = domainObj.ShipmentLines |> List.map fromShippableOrderLine
+        }
+
+
+//===============================================
+// DTO for BillableOrderPlaced event
+//===============================================
+
+/// Event to send to billing context
+type BillableOrderPlacedDto =  {
+    OrderId : string
+    BillingAddress: AddressDto
+    AmountToBill : decimal
+}
+
+
+module internal BillableOrderPlacedDto =
+    
+    let fromDomain (domainObj:BillableOrderPlaced) : BillableOrderPlacedDto =
+        {
+            OrderId = domainObj.OrderId.value
+            BillingAddress =  domainObj.BillingAddress |> AddressDto.fromAddress
+            AmountToBill = domainObj.AmountToBill.value
+        }
+
+
+
+type OrderAcknowlegmentSentDto = {
+    OrderId : string
+    EmailAddress : string
+}
+
+module internal OrderAcknowlegmentSentDto = 
+    
+    let fromDomain (domainObj:OrderAcknowledgmentSent) : OrderAcknowlegmentSentDto =
+        {
+            OrderId = domainObj.OrderId.value
+            EmailAddress = domainObj.EmailAddress.value
+        }
+        
+
+//===============================================
+// DTO for PlaceOrderEvent
+//===============================================
+/// Use a dictionary representation of a PlaceOrderEvent, suitablle for JSON
+type PlaceOrderEventDto = IDictionary<string,obj>        
+
+module internal PlaceOrderEventDto = 
+    
+    let fromDomain (domainobj:PlaceOrderEvent) : PlaceOrderEventDto =
+        match domainobj with
+        | ShippableOrderPlaced orderPlaced -> 
+            let obj = orderPlaced |> ShippableOrderPlacedDto.fromDomain |> box
+            [("ShippableOrderPlaced", obj)] |> dict
+
+        | BillableOrderPlaced orderplaced ->
+            let obj = orderplaced |> BillableOrderPlacedDto.fromDomain |> box
+            [("BillableOrderPlaced", obj)] |> dict
+
+        | AcknowledgmentSent orderPlaced -> 
+            let obj = orderPlaced |> OrderAcknowlegmentSentDto.fromDomain |> box
+            [("OrderAcknowledgmentSent", obj)] |> dict
+
+
+type PlaceOrderErrorDto =  {
+    Code : string
+    Message : string
+}
+
+module internal PlaceOrderErrorDto =
+    
+    let fromDomain (domainObj: PlaceOrderError) : PlaceOrderErrorDto =
+        match domainObj with
+        | Validation error ->
+            let (ValidationError msg) = error
+            { Code = "ValidationError"; Message = msg }
+    
+        | Pricing error -> 
+            let (PricingError msg) = error
+            {Code = "PricingError" ; Message = msg}
+
+        | RemoteService error -> 
+            let msg = sprintf "%s: %s" error.Service.Name error.Exception.Message
+            {Code = "RemoteServiceError" ; Message = msg}

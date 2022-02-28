@@ -54,7 +54,7 @@ type UnvalidatedOrder = {
 // outputs from the workflow (sucess case)
 
 ///Event will be created if the Aknowledgment was succesfully posted
-type OrderAknowledgmentSent = {
+type OrderAcknowledgmentSent = {
     OrderId : OrderId
     EmailAddress : EmailAddress
 }
@@ -87,30 +87,30 @@ type ShippableOrderLine = {
 
 type ShippableOrderPlaced = {
     OrderId : OrderId
-    BillingAddres : Address
-    AmountToBill : BillingAmount //TODO: think about turn this into a property
+    ShippingAddress : Address
+    ShipmentLines :  ShippableOrderLine list //TODO: think about turn this into a property
     Pdf : PdfAttachment
 }
 
 type BillableOrderPlaced = {
     OrderId : OrderId
-    BillingAddres : Address
+    BillingAddress : Address
     AmountToBill : BillingAmount  //TODO: think about turn this into a property
 }
 
 /// The possible events resulting from the PlaceOrder workflow
 /// Not all event will occur, depending on the logic of the workflow
-type PlacedOrderEvent = 
+type PlaceOrderEvent = 
     | ShippableOrderPlaced of ShippableOrderPlaced
     | BillableOrderPlaced of BillableOrderPlaced
-    | AcknowledmentSent of OrderAknowledgmentSent
+    | AcknowledgmentSent of OrderAcknowledgmentSent
 
 // --------------------------------------------------------
 // error outputs 
 
 /// All the thisn that can go wrong in this workflow
 type ValidationError = ValidationError of string
-type PricingError = PricinError of string
+type PricingError = PricingError of string
 
 type  ServiceInfo = {
     Name: string
@@ -122,7 +122,7 @@ type RemoteServiceError = {
     Exception : System.Exception
 }
 
-type PlacedOrderError = 
+type PlaceOrderError = 
     | Validation of ValidationError
     | Pricing of PricingError
     | RemoteService of RemoteServiceError
@@ -131,4 +131,4 @@ type PlacedOrderError =
 // --------------------------------------
 // hte workflow itself
 
-type PlaceOrder = UnvalidatedOrder -> Result<PlacedOrderEvent list, PlacedOrderError> //TODO ALTERAR RESULTADO PARA ASYNC RESULT
+type PlaceOrder = UnvalidatedOrder -> Result<PlaceOrderEvent list, PlaceOrderError> //TODO ALTERAR RESULTADO PARA ASYNC RESULT
