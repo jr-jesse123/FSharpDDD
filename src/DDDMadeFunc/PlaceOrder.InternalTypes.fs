@@ -53,7 +53,8 @@ type ValidatedOrder = {
     PricingMethod : PricingMethod
 }
 
-
+type ValidateOrder = 
+    CheckProductCodeExists -> CheckAddressExists -> UnvalidatedOrder -> AsyncResult<ValidatedOrder, ValidationError>
 // ----------------------------
 // Pricing step
 // ----------------------------

@@ -108,8 +108,9 @@ type PlaceOrderEvent =
 // --------------------------------------------------------
 // error outputs 
 
-/// All the thisn that can go wrong in this workflow
+/// All the things that can go wrong in this workflow
 type ValidationError = ValidationError of string
+
 type PricingError = PricingError of string
 
 type  ServiceInfo = {
@@ -131,7 +132,7 @@ type PlaceOrderError =
 // --------------------------------------
 // hte workflow itself
 
-type PlaceOrder = UnvalidatedOrder -> Result<PlaceOrderEvent list, PlaceOrderError> //TODO ALTERAR RESULTADO PARA ASYNC RESULT
+type PlaceOrder = UnvalidatedOrder -> AsyncResult<PlaceOrderEvent list, PlaceOrderError> //TODO ALTERAR RESULTADO PARA ASYNC RESULT
 
 
 

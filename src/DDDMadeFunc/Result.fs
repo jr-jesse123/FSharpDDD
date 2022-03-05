@@ -3,9 +3,11 @@ namespace global
 
 open System
 
+
+
 [<AutoOpen>]
 module internal Utils = 
-    
+    let throwNotImplemented () = failwith "not implemented"    
     //TODO: think about changin this to the defaulvalue function
     let defaultIfNone defaultValue  = 
         //match opt with
@@ -80,7 +82,36 @@ module Async =
             return f x
         }
 
+
 type AsyncResult<'Success,'Failure> = Async<Result<'Success, 'Failure>>
 
 module AsyncResult =
     let retn x : AsyncResult<'Success,'Failure> =   Async.retn (Ok x)
+
+    /// apply a monadic function to an AsyncResult value
+    let bind  (f: 'a -> AsyncResult<'b,'c>) (xAsyncResult: AsyncResult<'a,'c>) : AsyncResult<_,_> =
+        async {
+            let! xResult = xAsyncResult
+            match xResult with
+            | Ok x -> return! ( f x )
+            | Error err -> return ( Error err)
+        }
+
+    let mapError f (xAsyncresult: Async<Result<'c,'a>>) (*: AsyncResult<_,_>*) = 
+        xAsyncresult |> Async.map ( Result.mapError f)
+
+    let ofResult xResult = 
+        async.Return xResult
+
+        //Async.map (Result.mapError f) xAsyncresult
+
+[<AutoOpenAttribute>]
+module AsyncResultComputationExpression = 
+    
+    type AsyncResultbuilder() =
+        member _.Bind(x,f) = AsyncResult.bind f x
+        member _.Return(x)  = AsyncResult.retn x
+
+        member _.Zero() = AsyncResult.retn ()
+
+    let asyncResult = AsyncResultbuilder()
