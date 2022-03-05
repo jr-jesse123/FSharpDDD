@@ -67,9 +67,19 @@ let validateOrder : ValidateOrder = failwith ""
 
 let priceOrder : PriceOrder = throwNotImplemented ()
 
+
+let addShippingInfoToOrder : AddShippingInfoToOrder = throwNotImplemented ()
+
+let freeVipShipping : FreeVipShipping = throwNotImplemented ()
+
+let acknowledgeOrder : AcknowledgeOrder = throwNotImplemented ()
+
+let createEvents : CreateEvents = throwNotImplemented ()
 // ---------------------------
 // overall workflow
 // ---------------------------
+
+
 
 let placeOrder 
     checkProductExists // dependency
@@ -89,24 +99,21 @@ let placeOrder
                     unvalidatedOrder 
                 |> AsyncResult.mapError PlaceOrderError.Validation
 
-            //let! pricedOrder = 
-            //    priceOrder getProductPrice validatedOrder 
-                //|> AsyncResult.ofResult
-                //|> AsyncResult.mapError PlaceOrderError.Pricing
+            let! pricedOrder = 
+                priceOrder getProductPrice validatedOrder 
+                |> AsyncResult.ofResult
+                |> AsyncResult.mapError PlaceOrderError.Pricing
 
-            //let pricedOrderWithShipping = 
-            //    pricedOrder 
-            //    |> addShippingInfoToOrder calculateShippingCost
-            //    |> freeVipShipping
-            //let acknowledgementOption = 
-            //    acknowledgeOrder createOrderAcknowledgmentLetter sendOrderAcknowledgment pricedOrderWithShipping 
-            //let events = 
-            //    createEvents pricedOrder acknowledgementOption 
-            //return events
+            let pricedOrderWithShipping = 
+                pricedOrder 
+                |> addShippingInfoToOrder calculateShippingCost
+                |> freeVipShipping
+            let acknowledgementOption = 
+                acknowledgeOrder createOrderAcknowledgmentLetter sendOrderAcknowledgment pricedOrderWithShipping 
             
-
-            //throwNotImplemented ()
-
-            return []
+            let events = 
+                createEvents pricedOrder acknowledgementOption 
+            return events
+            
         }
 

@@ -122,13 +122,16 @@ type PricedOrderWithShippingMethod = {
 
 type CalculateShippingCost = PricedOrder -> Price
 
+type AddShippingInfoToOrder = 
+    CalculateShippingCost -> PricedOrder -> PricedOrderWithShippingMethod
+
 
 // -------------------------
 // VIP shipping 
 // ------------------------
 
 //TODO: check the effects of removing this
-type FreeShipping = PricedOrderWithShippingMethod -> PricedOrderWithShippingMethod
+type FreeVipShipping = PricedOrderWithShippingMethod -> PricedOrderWithShippingMethod
 
 
 
@@ -161,7 +164,7 @@ type SendOrderAcknowledgment =
 
 
 type AcknowledgeOrder = 
-    CreateOrderAcknowledgmentLetter -> SendOrderAcknowledgment -> PricedOrderWithShippingMethod -> OrderAcknowledgment option
+    CreateOrderAcknowledgmentLetter -> SendOrderAcknowledgment -> PricedOrderWithShippingMethod -> OrderAcknowledgmentSent option
 
 
 // ------------------
