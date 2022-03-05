@@ -69,6 +69,8 @@ module ResultComputationExpression  =
 
         member _.Return x = Ok x
 
+        member this.Zero() = this.Return()
+
     let result = new ResultBuilder()
 
 

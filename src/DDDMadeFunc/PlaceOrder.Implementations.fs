@@ -2,6 +2,8 @@
 
 open OrderTaking.Common
 open OrderTaking.PlaceOrder.InternalTypes
+open System.Runtime.ExceptionServices
+open System.ComponentModel.DataAnnotations
 
 // ==================================================================
 // Final implementation for the PlaceOrderWorkflow
@@ -46,8 +48,55 @@ let toCustomerInfo (unvalidatedCustomerInfo : UnvalidatedCostumerInfo) =
 
 
 /// Call the checkAddressExists and convert the error to a ValidationError
-let toAddress (CheckedAddress checkedAddress) : Address =
-    failwith "não implementado"
+let toAddress (CheckedAddress checkedAddress)  =
+    result {
+        let! addressLine1 = 
+            checkedAddress.AddressLine1 
+            |> String50.create "AddressLine1"
+            |> Result.mapError ValidationError
+
+
+        let! addressLine2 = 
+            checkedAddress.AddressLine2
+            |> String50.createOption "AddressLine2"
+            |> Result.mapError ValidationError
+
+        let! addressLine3 = 
+            checkedAddress.AddressLine3
+            |> String50.createOption "AddressLine3"
+            |> Result.mapError ValidationError
+
+        let! addressLine4 = 
+            checkedAddress.AddressLine4
+            |> String50.createOption "AddressLine4"
+            |> Result.mapError ValidationError
+
+        let! city = 
+            checkedAddress.City
+            |> String50.create "City"
+            |> Result.mapError ValidationError
+
+        let! zipCode = 
+            checkedAddress.ZipCode
+            |> ZipCode.create "ZipCode"
+            |> Result.mapError ValidationError
+
+        let! state = 
+            checkedAddress.State
+            |> UsStateCode.create "State"
+            |> Result.mapError ValidationError
+
+        let! country = 
+            checkedAddress.Country
+            |> String50.create "Country"
+            |> Result.mapError ValidationError
+
+        let address = Address.create (
+            addressLine1, addressLine2, addressLine3, addressLine4, city, zipCode, state, country
+        )
+
+        return address
+    }
 
 let toOrderId orderId = 
     orderId
@@ -56,12 +105,13 @@ let toOrderId orderId =
 
 
 /// Helper function for validateOrder 
-let toOrderLidId orderId = 
-    failwith "not implemented"
+let toOrderLidId orderLineId = 
+    orderLineId
+    |> OrderLineId.create "OrderLineId"
+    |> Result.mapError ValidationError
 
 
 /// Helper function for validateOrder 
-
 let validateOrder : ValidateOrder = failwith ""
 
 

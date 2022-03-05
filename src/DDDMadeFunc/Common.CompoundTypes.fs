@@ -40,3 +40,16 @@ type Address = {
     Country: String50
 }
 
+module Address = 
+    let create (addressLine1, addressLine2, addressLine3, addressLine4, city, zipCode, state, country) =
+        {
+                AddressLine1 = addressLine1
+                AddressLine2 = addressLine2
+                AddressLine3 = addressLine3
+                AddressLine4 = addressLine4
+                City = city
+                ZipCode = zipCode
+                State = state
+                Country = country
+        }
+
