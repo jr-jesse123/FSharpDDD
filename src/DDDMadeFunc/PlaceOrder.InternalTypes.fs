@@ -16,10 +16,23 @@ open OrderTaking.PlaceOrder
 // Product validation
 type CheckProductCodeExists = ProductCode -> bool
 
-// Address validation
+
+// these two types are internal in the book but I couldn´t compile 
+type CheckedAddress = CheckedAddress of UnvalidatedAddress
+
 type AddressValidationError = 
     | InvalidFormat 
     | AddressNotFound
+
+
+// Address validation
+type CheckAddressExists = UnvalidatedAddress -> AsyncResult<CheckedAddress,AddressValidationError>
+
+
+// --------------------------------------
+// Validated Order 
+// -------------------------------------
+
 
 type PricingMethod =
     | Stantad

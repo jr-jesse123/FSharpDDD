@@ -11,9 +11,11 @@
     <Compile Include="PlaceOrder.InternalTypes.fs" />
     <Compile Include="PlaceOrder.Implementations.fs" />
     <Compile Include="PlaceOrder.Dto.fs" />
+    <Compile Include="PlaceOrder.Api.fs" />
     <Compile Include="AssemblyInfo.fs" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="AutoMapper" Version="11.0.1" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
   </ItemGroup>
 </Project>

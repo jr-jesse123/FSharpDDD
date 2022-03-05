@@ -375,12 +375,12 @@ module Price =
     /// Return Error if input is not a decimal between 0.0 and 1000.00
     let create v = ConstrainedTypes.createDecimal "Price" Price 0.0M 1000.00M v
 
-    // /// Create a price from a decimal.
-    // /// throw an exception if out of bounds. This should only be used if you know de value is valid.
-    // let unsafeCreate v = 
-    //     match create v with
-    //     | Ok price -> price
-    //     | Error err -> failwithf "not expecting Price to be out of bounds: %s" err
+    /// Create a price from a decimal.
+    /// throw an exception if out of bounds. This should only be used if you know de value is valid.
+    let unsafeCreate v = 
+        match create v with
+        | Ok price -> price
+        | Error err -> failwithf "not expecting Price to be out of bounds: %s" err
         
     // /// Multiply a Price by a decimal qty.
     // /// Return Error if new price is out of bounds.

@@ -132,3 +132,6 @@ type PlaceOrderError =
 // hte workflow itself
 
 type PlaceOrder = UnvalidatedOrder -> Result<PlaceOrderEvent list, PlaceOrderError> //TODO ALTERAR RESULTADO PARA ASYNC RESULT
+
+
+
