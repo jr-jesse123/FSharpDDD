@@ -4,6 +4,7 @@ open OrderTaking.Common
 open OrderTaking.PlaceOrder.InternalTypes
 open System.Runtime.ExceptionServices
 open System.ComponentModel.DataAnnotations
+open Newtonsoft.Json.Schema
 
 // ==================================================================
 // Final implementation for the PlaceOrderWorkflow
@@ -221,9 +222,77 @@ let validateOrder : ValidateOrder =
         }
 
         
+// ----------------------------------
+// PriceOrder setp
+// ----------------------------------
+
+let toPricedOrderLine (getProductPrice:GetProductPrice) (validatedOrderLine:ValidatedOrderLine) =
+    result{
+        let qty = validatedOrderLine.Quantity.value
+        let price = validatedOrderLine.ProductCode |> getProductPrice
+        let! linePrice = 
+            Price.multiply qty price
+            |> Result.mapError PricingError
+        
+        let pricedLine : PricedOrderProductLine = {
+            OrderLineId = validatedOrderLine.OrderLineId
+            ProductCode = validatedOrderLine.ProductCode
+            Quantity = validatedOrderLine.Quantity
+            LinePrice = linePrice
+        }
+
+        return (ProductLine pricedLine)
+    }
 
 
-let priceOrder : PriceOrder = throwNotImplemented ()
+// add the special commento line if needed
+let addCommentLine pricingMethod lines = 
+    match pricingMethod with
+    | Standard ->
+        lines //unchanged
+    | Promotion (PromotionCode promoCode) ->
+        let commentLine = 
+            sprintf "Applied promotion %s" promoCode
+            |> CommentLine
+        List.append lines [commentLine]
+
+let getLinePrice line = 
+    match line with
+    | ProductLine line ->
+        line.LinePrice
+    | CommentLine _ ->
+        Price.unsafeCreate 0M
+
+// add the special comment line
+let priceOrder : PriceOrder = 
+    fun getPricingFunction validatedOrder ->
+        let getProductPrice = getPricingFunction validatedOrder.PricingMethod
+        result{
+            let! lines = 
+                    validatedOrder.Lines
+                    |> List.map (toPricedOrderLine getProductPrice)
+                    |> Result.sequence
+                    |> Result.map(fun lines -> 
+                        lines |> addCommentLine validatedOrder.PricingMethod
+                        )
+
+            let! amountToBill = 
+                lines
+                |> List.map getLinePrice
+                |> BillingAmount.sumPrices
+                |> Result.mapError PricingError
+
+            let pricedOrder : PricedOrder = {
+                OrderId = validatedOrder.OrderId
+                CustomerInfo = validatedOrder.CustomerInfo
+                ShippingAddress = validatedOrder.ShippingAddress
+                BillingAddress = validatedOrder.BillingAddress
+                Lines = lines
+                AmountToBill = amountToBill
+                PricingMethod = validatedOrder.PricingMethod
+            }
+            return pricedOrder
+        }
 
 
 

@@ -392,10 +392,10 @@ module Price =
         | Ok price -> price
         | Error err -> failwithf "not expecting Price to be out of bounds: %s" err
         
-    // /// Multiply a Price by a decimal qty.
-    // /// Return Error if new price is out of bounds.
-    // let multiply qty (Price p) =
-    //     create (qty * p)
+    /// Multiply a Price by a decimal qty.
+    /// Return Error if new price is out of bounds.
+    let multiply qty (Price p) =
+        create (qty * p)
     
 
 type Price with

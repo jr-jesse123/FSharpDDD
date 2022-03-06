@@ -2,6 +2,7 @@ module internal OrderTaking.PlaceOrder.InternalTypes
 
 open OrderTaking.Common
 open OrderTaking.PlaceOrder
+open OrderTaking.PlaceOrder
 
 
 // =======================================================
@@ -87,7 +88,9 @@ type PricedOrder =  {
     CustomerInfo : CustomerInfo
     ShippingAddress : Address
     BillingAddress : Address
+    Lines : PricedOrderLine list
     AmountToBill : BillingAmount
+    PricingMethod : PricingMethod
 }
 
 
