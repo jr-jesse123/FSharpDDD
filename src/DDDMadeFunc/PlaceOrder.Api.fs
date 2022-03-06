@@ -38,7 +38,7 @@ type PlaceOrderApi = HttpRequest -> Async<HttpResponse>
 
 module internal Dependencies =
 
-    let checkProducExists : CheckProductCodeExists =
+    let checkProductExists : CheckProductCodeExists =
         fun productCode -> true
 
 
@@ -86,7 +86,7 @@ module internal Dependencies =
     let sendOrderAcknowledgment : SendOrderAcknowledgment =
         fun orderAcknowledgment -> Sent
 
-
+    let calculateShippingCost : CalculateShippingCost = throwNotImplemented ()
 
 
 // ------------------------------------
@@ -112,7 +112,7 @@ let workflowResulttoHttpResponse result =
         let json = JsonConvert.SerializeObject dto
         {HttpStatusCode = 401 ; Body = json}
         
-
+open Dependencies
 
 let placeOrderApi : PlaceOrderApi = 
     fun request ->
@@ -123,14 +123,13 @@ let placeOrderApi : PlaceOrderApi =
         let unvalidatedOrder = orderForm |> OrderFormDto.toUnvalidatedOrder
 
         let workflow = 
-            failwith "not implemented"
-            //Implementation.placeOrder 
-            //          checkProductExists // dependency
-            //          checkAddressExists // dependency
-            //          getPricingFunction // dependency
-            //          calculateShippingCost // dependency
-            //          createOrderAcknowledgmentLetter  // dependency
-            //          sendOrderAcknowledgment // dependency
+            Implementation.placeOrder 
+                      checkProductExists // dependency
+                      checkAddressExists // dependency
+                      getPricingFunction // dependency
+                      calculateShippingCost // dependency
+                      createOrderAcknowledgmentLetter  // dependency
+                      sendOrderAcknowledgment // dependency
             
         let asyncResult = workflow unvalidatedOrder
 
