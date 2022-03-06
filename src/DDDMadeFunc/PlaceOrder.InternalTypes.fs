@@ -35,7 +35,7 @@ type CheckAddressExists = UnvalidatedAddress -> AsyncResult<CheckedAddress,Addre
 
 
 type PricingMethod =
-    | Stantad
+    | Standard
     | Promotion of PromotionCode
 
 type ValidatedOrderLine = {
