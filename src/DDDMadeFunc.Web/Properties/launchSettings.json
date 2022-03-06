@@ -1,0 +1,12 @@
+{
+  "profiles": {
+    "DDDMadeFunc.Web": {
+      "commandName": "Project",
+      "launchBrowser": true,
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Development"
+      },
+      "applicationUrl": "https://localhost:60318;http://localhost:60319"
+    }
+  }
+}

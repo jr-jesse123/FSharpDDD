@@ -9,7 +9,6 @@
 
   <ItemGroup>
     <Compile Include="CE.PBTests.fs" />
-    <Compile Include="End2EndTests.fs" />
     <Compile Include="Program.fs" />
   </ItemGroup>
 
