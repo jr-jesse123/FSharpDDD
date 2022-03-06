@@ -48,6 +48,14 @@ module Result =
         | Error err, Ok _ -> Error err
         | Error e1, Error e2 ->  Error e1
 
+    let sequence aListOfResults = 
+        let (<*>) = apply
+        let (<!>) = map
+        let cons head tail = head::tail
+        let consR headR tailR = cons <!> headR <*> tailR
+        let initialValue = Ok [] // empty list inside Result
+
+        List.foldBack consR aListOfResults initialValue
 
     let isOk = function |Ok _ -> true |Error _ -> false
 

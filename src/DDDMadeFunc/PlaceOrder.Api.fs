@@ -77,7 +77,7 @@ module internal Dependencies =
 
 
     let getPricingFunction : GetPricingFunction = 
-        failwith "implement pricing Module"
+        PricingModule.getPricingFunction getStandardPrices getPromotionPrices
 
 
     let createOrderAcknowledgmentLetter : CreateOrderAcknowledgmentLetter =

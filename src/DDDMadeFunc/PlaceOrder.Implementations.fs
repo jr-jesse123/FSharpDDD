@@ -98,6 +98,17 @@ let toAddress (CheckedAddress checkedAddress)  =
         return address
     }
 
+/// Call the checkAddressExists and convert the error toa ValidationError
+let toCheckedAddress (checkAddres:CheckAddressExists) address =
+    let toValidationError err = 
+        match err with
+        | AddressNotFound -> ValidationError "Address not found"
+        | InvalidFormat -> ValidationError "Address has bad format"
+
+    address
+    |> checkAddres
+    |> AsyncResult.mapError toValidationError
+
 let toOrderId orderId = 
     orderId
     |> OrderId.create "OrderId"
@@ -105,17 +116,115 @@ let toOrderId orderId =
 
 
 /// Helper function for validateOrder 
-let toOrderLidId orderLineId = 
+let toOrderLineId orderLineId = 
     orderLineId
     |> OrderLineId.create "OrderLineId"
     |> Result.mapError ValidationError
 
+/// Helper function for validateOrder
+let toProductCode (checkProductCodeExists:CheckProductCodeExists) productCode =
+    
+    // create a ProductCode -> Result<ProductCode,...> function 
+    // suitable for using in a pipeline
+    let checkProduct productCode = 
+        if checkProductCodeExists productCode then
+            Ok productCode
+        else
+            sprintf "Invalid: %A" productCode
+            |> ValidationError
+            |> Error
 
-/// Helper function for validateOrder 
-let validateOrder : ValidateOrder = failwith ""
+    productCode 
+    |> ProductCode.create "ProductCode"
+    |> Result.mapError ValidationError
+    |> Result.bind checkProduct
+    
+
+/// helper function for validateOrder
+let toOrderQuantity productCode quantity = 
+    OrderQuantity.create "OrderQuantity" productCode quantity
+    |> Result.mapError ValidationError
+
+
+let toValidateOrderLine checkProductExists (unvalidatedOrderLine:UnvalidatedOrderLine) =
+    result {
+        let! orderlineId =
+            unvalidatedOrderLine.OrderLineId |> toOrderLineId
+
+        let! productCode = unvalidatedOrderLine.ProductCode |> toProductCode checkProductExists
+
+        let! quantity = unvalidatedOrderLine.Quantity |> toOrderQuantity productCode
+
+        let validatedOrderline : ValidatedOrderLine = {
+            OrderLineId = orderlineId
+            ProductCode = productCode
+            Quantity = quantity
+        }
+
+        return validatedOrderline
+    }
+
+
+let validateOrder : ValidateOrder = 
+    fun checkproductCodeExists checkAddressExists unvalidatedOrder ->
+        let toCheckedAddress = toCheckedAddress checkAddressExists
+        asyncResult {
+            let! orderId = 
+                unvalidatedOrder.OrderId
+                |> toOrderId
+                |> AsyncResult.ofResult
+
+            let! customerInfo = 
+                unvalidatedOrder.CustomerInfo
+                |> toCustomerInfo
+                |> AsyncResult.ofResult
+
+            let! checkedShippingAddres = 
+                unvalidatedOrder.ShippingAddress 
+                |> toCheckedAddress 
+
+            let! shippingAddress = 
+                checkedShippingAddres
+                |> toAddress 
+                |> AsyncResult.ofResult
+
+            let! checkedBillingAddres = 
+                unvalidatedOrder.BillingAddress 
+                |> toCheckedAddress 
+
+            let! billingAddress = 
+                checkedBillingAddres
+                |> toAddress
+                |> AsyncResult.ofResult
+
+            let! lines = 
+                unvalidatedOrder.Lines
+                |> List.map (toValidateOrderLine checkproductCodeExists)
+                |> Result.sequence//convert a list of Results to a single Result //TODO: change this to applicative
+                |> AsyncResult.ofResult
+
+
+            let pricingMethod = 
+                unvalidatedOrder.PromotionCode
+                |> PricingModule.createPricingMethod
+
+            let validatedOrder : ValidatedOrder = {
+                OrderId = orderId
+                CustomerInfo = customerInfo
+                ShippingAddress = shippingAddress
+                BillingAddress = billingAddress
+                Lines = lines
+                PricingMethod = pricingMethod
+            }
+            
+            return validatedOrder
+        }
+
+        
 
 
 let priceOrder : PriceOrder = throwNotImplemented ()
+
 
 
 let addShippingInfoToOrder : AddShippingInfoToOrder = throwNotImplemented ()
@@ -125,6 +234,9 @@ let freeVipShipping : FreeVipShipping = throwNotImplemented ()
 let acknowledgeOrder : AcknowledgeOrder = throwNotImplemented ()
 
 let createEvents : CreateEvents = throwNotImplemented ()
+
+
+
 // ---------------------------
 // overall workflow
 // ---------------------------

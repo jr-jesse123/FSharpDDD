@@ -354,6 +354,16 @@ type UnitQuantity with
 
 
 module OrderQuantity = 
+    let create fieldName productCode quantity = 
+        match productCode with
+        | Widget _ ->
+            UnitQuantity.create fieldName (int quantity) // float to int
+            |> Result.map OrderQuantity.Unit
+
+        | Gizmo _ ->
+            KilogramQuantity.create fieldName quantity
+            |> Result.map OrderQuantity.Kilogram
+        
 
     /// Return the value inside a OrderQuantity
     let value qty = 
