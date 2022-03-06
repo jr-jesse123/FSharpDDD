@@ -8,6 +8,7 @@
     <Compile Include="Common.SimpleTypes.fs" />
     <Compile Include="Common.CompoundTypes.fs" />
     <Compile Include="PlaceOrder.PublicTypes.fs" />
+    <Compile Include="PlaceOrder.Pricing.fs" />
     <Compile Include="PlaceOrder.InternalTypes.fs" />
     <Compile Include="PlaceOrder.Implementations.fs" />
     <Compile Include="PlaceOrder.Dto.fs" />
