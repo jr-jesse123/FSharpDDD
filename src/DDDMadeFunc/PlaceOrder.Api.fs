@@ -4,11 +4,7 @@ open Newtonsoft.Json
 open OrderTaking.Common
 open OrderTaking.PlaceOrder.InternalTypes
 open OrderTaking.PlaceOrder
-open OrderTaking.PlaceOrder
-open Newtonsoft.Json
-open Newtonsoft.Json
-open OrderTaking.PlaceOrder
-
+open Implementation
 
 type JsonString = string
 
@@ -86,7 +82,7 @@ module internal Dependencies =
     let sendOrderAcknowledgment : SendOrderAcknowledgment =
         fun orderAcknowledgment -> Sent
 
-    let calculateShippingCost : CalculateShippingCost = throwNotImplemented ()
+    //let calculateShippingCost : CalculateShippingCost = throwNotImplemented ()
 
 
 // ------------------------------------
@@ -113,6 +109,7 @@ let workflowResulttoHttpResponse result =
         {HttpStatusCode = 401 ; Body = json}
         
 open Dependencies
+open OrderTaking.PlaceOrder
 
 let placeOrderApi : PlaceOrderApi = 
     fun request ->

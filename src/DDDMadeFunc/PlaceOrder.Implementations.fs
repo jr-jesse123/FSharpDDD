@@ -295,6 +295,27 @@ let priceOrder : PriceOrder =
         }
 
 
+// --------------------------------------
+// Shipping step 
+// --------------------------------------
+
+let (|UsLocalState|UsRemoteState|Internationl|) (address:Address) =
+    if address.Country.value = "US" then
+        match address.State.value with
+        | "CA" | "OR" | "AZ" | "NV" ->  UsLocalState
+        | _ -> UsRemoteState
+    else
+        Internationl
+
+
+let calculateShippingCost : CalculateShippingCost =
+    fun pricedOrder -> 
+        match pricedOrder.ShippingAddress with
+        | UsLocalState -> 5.0M
+        | UsRemoteState -> 10.0M
+        | Internationl -> 20.M
+        |> Price.unsafeCreate
+
 
 let addShippingInfoToOrder : AddShippingInfoToOrder = throwNotImplemented ()
 
@@ -309,9 +330,6 @@ let createEvents : CreateEvents = throwNotImplemented ()
 // ---------------------------
 // overall workflow
 // ---------------------------
-
-
-
 let placeOrder 
     checkProductExists // dependency
     checkAddressExists // dependency
