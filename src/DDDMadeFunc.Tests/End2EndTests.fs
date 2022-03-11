@@ -116,9 +116,11 @@ let ``PlaceOrder Workflow should fail with Ivalid input, showing all the error m
 
     //TODO: REDUCE THIS FUNCTIONS
     let shouldcontain words (setence:string) = 
-        for word : string in words do 
-            test <@ setence.Contains word  @>
-        true
+        words 
+        |> Seq.map (fun (x:string) -> setence.Contains(x))
+        |> Seq.reduce (&&)
+
+        
 
     test <@ output.Body |> shouldcontain ["FirstName" ; "LastName"]  @>
 
@@ -127,10 +129,4 @@ let failOnError =
     function
     | Ok _ -> ()
     | Error _ -> failwith "Process faild"
-
-[<Fact>]
-let ``string 50 test`` () =
-    String50.create "campo" "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
-    |> failOnError
-    
 

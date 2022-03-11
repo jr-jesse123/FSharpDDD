@@ -2,6 +2,7 @@
 namespace global
 
 open System
+open Microsoft.VisualBasic
 
 
 
@@ -41,7 +42,7 @@ module Result =
 
 
     ///Monadic
-    let apply fResult xResult = 
+    let applyM fResult xResult = 
         match fResult, xResult with
         | Ok f , Ok x -> Ok (f x)
         | Ok _ , Error err //-> Error err
@@ -49,15 +50,18 @@ module Result =
         | Error e1, Error e2 ->  Error e1
 
     let sequence aListOfResults = 
-        let (<*>) = apply
+        let (<*>) = applyM
         let (<!>) = map
         let cons head tail = head::tail
+        
         let consR headR tailR = cons <!> headR <*> tailR
         let initialValue = Ok [] // empty list inside Result
 
         List.foldBack consR aListOfResults initialValue
 
     let isOk = function |Ok _ -> true |Error _ -> false
+
+
 
     
 
@@ -82,6 +86,40 @@ module ResultComputationExpression  =
     let result = new ResultBuilder()
 
 
+type Validation<'Success,'Failure> = Result<'Success,'Failure list>
+
+/// functions for the 'Validation' type (mostly applicative)
+[<RequireQualifiedAccess>]
+module Validation= 
+    /// Alias for Result.Map
+    let amp = Result.map
+
+    /// Appli a Validation<fn> to a Validation<x> applicativelly
+    let applyA (fV:Validation<_,_>) (xV:Validation<_,_>) : Validation<_,_> =
+        match fV, xV with
+        | Ok f, Ok x -> Ok (f x)
+        | Error errs1, Ok _ -> Error errs1
+        | Ok _, Error errs2 -> Error errs2
+        | Error errs1, Error errs2 -> Error (errs1 @ errs2)
+    
+
+    /// combine a list of Validation, applicatively
+    let sequence (aListOfValidations:Validation<_,_> list) =
+        let (<*>) = applyA
+        let (<!>) = Result.map
+        let cons head tail = head :: tail
+        let consR headR tailR = cons <!> headR <*> tailR
+        let initialValue = Ok []
+
+        List.foldBack consR aListOfValidations initialValue
+
+
+    let ofresult xR =
+        xR |> Result.mapError List.singleton
+
+    let toResult (xV: Validation<_,_>) : Result<_,_> =
+        xV 
+
 [<RequireQualifiedAccess>]
 module Async = 
     let retn x = async.Return x
@@ -92,6 +130,9 @@ module Async =
             return f x
         }
 
+    let bind f xA = async.Bind(xA,f)
+
+  
 
 type AsyncResult<'Success,'Failure> = Async<Result<'Success, 'Failure>>
 
@@ -107,13 +148,30 @@ module AsyncResult =
             | Error err -> return ( Error err)
         }
 
+    let map f (x:AsyncResult<_,_>) =
+        //x |> f |> Result.map |> Async.map 
+        let map = Result.map >> Async.map
+        map f x
+        
+        //Async.map (Result.map f) x
+
     let mapError f (xAsyncresult: Async<Result<'c,'a>>) (*: AsyncResult<_,_>*) = 
         xAsyncresult |> Async.map ( Result.mapError f)
 
     let ofResult xResult = 
         async.Return xResult
 
-        //Async.map (Result.mapError f) xAsyncresult
+        
+    /// Apply an AsyncResult function to an AsyuncResult value, monadically
+    let applyM (fAsyncResult: AsyncResult<_,_>) (xAsyncResult: AsyncResult<_,_>) : AsyncResult<_,_> =
+        fAsyncResult |> Async.bind   (fun fResult ->
+        xAsyncResult |> Async.map (fun xResult -> Result.applyM fResult xResult))
+
+    /// Apply an AsyncResult function to an AsyncResult value, applicatively
+    let applyA (fAsyncResult : AsyncResult<_,_>) (xAsyncResult: AsyncResult<_,_>) : AsyncResult<_,_> =
+        fAsyncResult |> Async.bind (fun fResult -> 
+        xAsyncResult |> Async.map (fun xResult -> Validation.applyA fResult xResult)
+        )
 
 [<AutoOpenAttribute>]
 module AsyncResultComputationExpression = 

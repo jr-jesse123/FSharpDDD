@@ -132,7 +132,7 @@ type PlaceOrderError =
 // --------------------------------------
 // hte workflow itself
 
-type PlaceOrder = UnvalidatedOrder -> AsyncResult<PlaceOrderEvent list, PlaceOrderError> //TODO ALTERAR RESULTADO PARA ASYNC RESULT
+type PlaceOrder = UnvalidatedOrder -> AsyncResult<PlaceOrderEvent list, PlaceOrderError> 
 
 
 
