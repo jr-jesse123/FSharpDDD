@@ -26,9 +26,9 @@ let addressDto : AddressDto = {
 }
 
 let line : OrderFormLineDto = {
-    OrderLineId = "orderlineId"
-    ProductCode = "product1"
-    Quantity = 1
+    OrderLineId = System.Guid.NewGuid().ToString().Substring(0,10)
+    ProductCode = "W1234"
+    Quantity = 1.0M
 }
 
 let unvalidatedFormDto : OrderFormDto = {
@@ -46,6 +46,7 @@ let request : OrderTaking.PlaceOrder.Api.HttpRequest = {
     Body = JsonConvert.SerializeObject unvalidatedFormDto
 }
 
+//TODO: FAZER TESTES DE PROPRIEDADE PARA PRODUTOS VÁLIDOS
 
 [<Fact>]
 let teste1 () =
@@ -56,4 +57,15 @@ let teste1 () =
            
     
 
+    test <@ output.HttpStatusCode = 401 @>
+
+
+    
+[<Fact>]
+let teste2 () =
+
+    let output =
+        Api.placeOrderApi request 
+        |> Async.RunSynchronously  
+          
     test <@ output.HttpStatusCode = 200 @>

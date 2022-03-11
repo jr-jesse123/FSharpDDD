@@ -1,10 +1,14 @@
-﻿module internal OrderTaking.PlaceOrder.Implementation
+﻿
 
+module internal OrderTaking.PlaceOrder.Implementation
+
+open OrderTaking.PlaceOrder
 open OrderTaking.Common
 open OrderTaking.PlaceOrder.InternalTypes
 open System.Runtime.ExceptionServices
 open System.ComponentModel.DataAnnotations
 open Newtonsoft.Json.Schema
+open System.Numerics
 
 // ==================================================================
 // Final implementation for the PlaceOrderWorkflow
@@ -317,14 +321,126 @@ let calculateShippingCost : CalculateShippingCost =
         |> Price.unsafeCreate
 
 
-let addShippingInfoToOrder : AddShippingInfoToOrder = throwNotImplemented ()
+let addShippingInfoToOrder : AddShippingInfoToOrder = 
+    fun calculateShippingcost pricedOrder ->
+        // create the shipping info
+        let shippingInfo = {
+            ShippingMethod = Fedex24
+            ShippingCost = calculateShippingcost pricedOrder
+        }
+        // add to the order
+        {
+            PricedOrder = pricedOrder
+            ShippingInfo = shippingInfo
+        }
 
-let freeVipShipping : FreeVipShipping = throwNotImplemented ()
+let freeVipShipping : FreeVipShipping = 
+    fun order ->
+        let updatedShippingInfo =
+            match order.PricedOrder.CustomerInfo.VipStatus with
+            | Normal -> order.ShippingInfo // umtouched
+            | VIP -> 
+                {
+                    order.ShippingInfo with
+                        ShippingCost = Price.unsafeCreate 0.0M
+                        ShippingMethod = Fedex24
+                }
+        {order with ShippingInfo = updatedShippingInfo}
 
-let acknowledgeOrder : AcknowledgeOrder = throwNotImplemented ()
 
-let createEvents : CreateEvents = throwNotImplemented ()
+// -------------------------------
+// AcknowlegeOrder setp
+// -------------------------------
 
+let acknowledgeOrder : AcknowledgeOrder = 
+    fun createAcknowledgmentLetter SendAcknowledgment PricedOrderWithShipping ->
+        let pricedOrder = PricedOrderWithShipping.PricedOrder
+
+        let letter = createAcknowledgmentLetter PricedOrderWithShipping
+        let acknowledgment = {
+            EmailAddress = pricedOrder.CustomerInfo.EmailAddress
+            Letter = letter
+        }
+
+        // if the acknowledgement was successfully sent,
+        // return the corresponding event, else return None
+        match SendAcknowledgment acknowledgment with
+        | Sent ->
+            let event = {
+                OrderId = pricedOrder.OrderId
+                EmailAddress = pricedOrder.CustomerInfo.EmailAddress
+            } 
+            Some event
+        | NotSent -> None
+
+
+// -------------------------
+// Create events 
+// -------------------------
+
+let makeShipmentLine (line:PricedOrderLine) : ShippableOrderLine option =
+    match line with
+    | ProductLine line -> 
+        {
+            ProductCode = line.ProductCode
+            Quantity = line.Quantity
+        } |> Some
+
+    | CommentLine _ -> None
+
+let createShippingEvent (placedOrder:PricedOrder) : ShippableOrderPlaced =
+        {
+            OrderId = placedOrder.OrderId
+            ShippingAddress = placedOrder.ShippingAddress
+            ShipmentLines = placedOrder.Lines |> List.choose makeShipmentLine
+            // empty pdf
+            Pdf = 
+                {
+                    Name = sprintf "Order%s.pdf" (placedOrder.OrderId.value)
+                    Bytes    = [||]
+                }
+        }  
+
+let createSBillingEvent (placedOrder:PricedOrder) : BillableOrderPlaced option = 
+    if placedOrder.AmountToBill.value > 0M then
+        let event : BillableOrderPlaced = 
+            {
+                OrderId = placedOrder.OrderId
+                BillingAddress = placedOrder.BillingAddress
+                AmountToBill = placedOrder.AmountToBill
+            } 
+        Some event
+    else
+        None
+
+/// helper to convert an option into a List
+let listOfOption = 
+    function
+    | Some x -> [x]
+    | None -> []
+
+
+let createEvents : CreateEvents = 
+    fun pricedOrder acknowledgmentEeventOpt ->
+        let acknowledgmentEvents = 
+            acknowledgmentEeventOpt 
+            |> Option.map PlaceOrderEvent.AcknowledgmentSent
+            |> listOfOption
+        let shippingEvents = 
+            pricedOrder
+            |> createShippingEvent
+            |> PlaceOrderEvent.ShippableOrderPlaced
+            |> List.singleton
+        let billingEvents = 
+            pricedOrder
+            |> createSBillingEvent
+            |> Option.map    PlaceOrderEvent.BillableOrderPlaced
+            |> listOfOption
+        [
+            yield! acknowledgmentEvents
+            yield! shippingEvents
+            yield! billingEvents
+        ]
 
 
 // ---------------------------

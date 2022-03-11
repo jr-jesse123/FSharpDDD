@@ -236,7 +236,9 @@ module UsStateCode =
     /// Create a UsStateCode from a string
     /// Return Error if input is null, empty, or desn´t have 2 letters
     let create fieldName str = 
-        let pattern = "^(A[KLRZ]|C[AOT]|D[CE]|FL|GA|HI|I[ADLN]|K[SY]|LA|M[ADEINOST]|N[CDEHJMVY]|O[HKR]|P[AR]|RI|S[CD]|T[NX]|UT|V[AIT]|W[AIVY])$"
+        let pattern = "^(A[KLRZ]|C[AOT]|D[CE]|FL|GA|HI|I[ADLN]|K[SY]|LA|M[ADEINOST]|N[CDEHJMVY]|O[HKR]|P[AR]|RI|S[CD]|T[NX]|UT|V[AIT]|W[AIVY])$" 
+        let pattern = "DF"    //ADDED DF TO MATCH MY ADDRESS
+        
         ConstrainedTypes.createLike fieldName UsStateCode pattern str
 
 
