@@ -4,6 +4,7 @@ open OrderTaking.Common
 open OrderTaking.PlaceOrder
 open FsCheck
 open FsCheck.Xunit
+open Newtonsoft.Json
 
 let string50Gen =
     Arb.generate<NonEmptyString> 
@@ -56,7 +57,5 @@ let ``CostumerInfoDtocan be converted to InValidatedCustomerInfoDto and back and
     && out.EmailAddress = customerDto.EmailAddress && out.VipStatus = customerDto.VipStatus
 
     
-    
-
 
     

@@ -13,20 +13,12 @@ module ConstrainedTypes =
 
     /// Create a constrained string using the constructor provided if the input isnot too big or null/empty
     let createString fieldName ctor maxLen str = 
-        // if String.IsNullOrEmpty str then
-        //     let msg = sprintf "%s must not be null or empty" fieldName
-        //     Error msg
-        // elif str.Length > maxLen then
-        //     let msg = sprintf "%s must not be more than %i chars" fieldName maxLen
-        //     Error msg
-        //  else 
-        //     ctor str |> Ok   
         match str with
         | NullOrEmpty _ -> 
-            sprintf "%s must not be null or empty" fieldName
+            sprintf "%s must not be null or empty" fieldName //TODO: TEST
             |>  Error 
         | TooLong maxLen _ ->    
-            sprintf "%s must not be more than %i chars" fieldName maxLen
+            sprintf "%s must not be more than %i chars" fieldName maxLen //TODO: TEST
             |> Error 
         | _ -> Ok (ctor str)
 
@@ -38,7 +30,7 @@ module ConstrainedTypes =
         match str with
         | NullOrEmpty _ -> Ok None
         | TooLong maxLen  _ -> 
-            sprintf "%s must not be more than %i chars" fieldName maxLen
+            sprintf "%s must not be more than %i chars" fieldName maxLen //TODO: TEST
             |> Error 
         | _ -> ctor str |> Some |> Ok
 
@@ -47,7 +39,7 @@ module ConstrainedTypes =
     let createInt fieldName ctor minVal maxVal i =
         if i < minVal then
             sprintf "%s Must not be less than %i" fieldName minVal
-            |> Error
+            |> Error 
         elif i > maxVal then
             sprintf "%s: must not be greater than %i" fieldName maxVal
             |> Error
@@ -59,10 +51,10 @@ module ConstrainedTypes =
     let createDecimal fieldName ctor minVal maxVal i =
         if i < minVal then
             sprintf "%s Must not be less than %M" fieldName minVal
-            |> Error
+            |> Error //TODO: TEST
         elif i > maxVal then
             sprintf "%s: must not be greater than %M" fieldName maxVal
-            |> Error
+            |> Error //TODO: TEST
         else   Ok (ctor i)
 
     open System.Text.RegularExpressions
@@ -74,12 +66,12 @@ module ConstrainedTypes =
     let createLike fieldName ctor pattern str =
         match str with
         | NullOrEmpty _ -> 
-            sprintf "%s: Must not be null or empty" fieldName |> Error
+            sprintf "%s: Must not be null or empty" fieldName |> Error //TODO: TEST
         | IsMatch pattern _ -> 
             Ok (ctor str)
         | _ -> 
-            sprintf "%s: '%s' must match the pattern '%s" fieldName str pattern
-            |> Error
+            sprintf "%s: '%s' must match the pattern '%s" fieldName str pattern 
+            |> Error //TODO: TEST
 
 // =====================================================================
 // Simple types and constrained types related to the  orderTaking domain

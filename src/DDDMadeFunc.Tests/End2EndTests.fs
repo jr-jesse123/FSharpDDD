@@ -6,6 +6,8 @@ open Swensen.Unquote
 open OrderTaking.PlaceOrder
 open OrderTaking.PlaceOrder.Api
 open Newtonsoft.Json
+open FsCheck
+open OrderTaking.Common
 
 let customerInfoDto : CustomerInfoDto = {
        FirstName = "Jessé"
@@ -40,32 +42,95 @@ let unvalidatedFormDto : OrderFormDto = {
     PromotionCode = "code"
 }
 
-let request : OrderTaking.PlaceOrder.Api.HttpRequest = {
+let request : Api.HttpRequest = {
     Action = ""
     Uri = ""
     Body = JsonConvert.SerializeObject unvalidatedFormDto
 }
 
-//TODO: FAZER TESTES DE PROPRIEDADE PARA PRODUTOS VÁLIDOS
 
 [<Fact>]
-let teste1 () =
+let ``PlaceOrder Workflow should succed with valid input`` () =
 
     let output =
         Api.placeOrderApi request 
         |> Async.RunSynchronously  
-           
+        
+    printfn "%s" output.Body
     
+    test <@ output.HttpStatusCode = 200 @>
 
+
+
+
+let invalidcustomerInfoDto : CustomerInfoDto = {
+       FirstName = "Jesséxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+       LastName = "Juniorxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+       EmailAddress = "junior.jesse@gmail.com"
+       VipStatus = "Normal"   
+}
+
+let invalidaddressDto : AddressDto = {
+       AddressLine1 = "av flamboyant lote 22 bloco c"
+       AddressLine2 = "vicnete pires lote 24"
+       AddressLine3 = ""
+       AddressLine4 = ""
+       City = "Brasília"
+       ZipCode = "70917000"
+       State = "DF"
+       Country = "Brazil"
+}
+
+let invalidline : OrderFormLineDto = {
+    OrderLineId = System.Guid.NewGuid().ToString().Substring(0,10)
+    ProductCode = "W1234"
+    Quantity = 1.0M
+}
+
+let invalidunvalidatedFormDto : OrderFormDto = {
+    OrderId = "orderid"
+    CustomerInfo = invalidcustomerInfoDto
+    ShippingAddress = invalidaddressDto
+    BillingAddress = invalidaddressDto
+    Lines = [invalidline]
+    PromotionCode = "code"
+}
+
+let invalidrequest : Api.HttpRequest = {
+    Action = ""
+    Uri = ""
+    Body = JsonConvert.SerializeObject invalidunvalidatedFormDto
+}
+
+
+[<Fact>]
+let ``PlaceOrder Workflow should fail with Ivalid input, showing all the error messages`` () =
+
+    let output =
+        Api.placeOrderApi invalidrequest
+        |> Async.RunSynchronously  
+        
+    printfn "%s" output.Body
+    
     test <@ output.HttpStatusCode = 401 @>
 
+    //TODO: REDUCE THIS FUNCTIONS
+    let shouldcontain words (setence:string) = 
+        for word : string in words do 
+            test <@ setence.Contains word  @>
+        true
 
-    
+    test <@ output.Body |> shouldcontain ["FirstName" ; "LastName"]  @>
+
+
+let failOnError = 
+    function
+    | Ok _ -> ()
+    | Error _ -> failwith "Process faild"
+
 [<Fact>]
-let teste2 () =
+let ``string 50 test`` () =
+    String50.create "campo" "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+    |> failOnError
+    
 
-    let output =
-        Api.placeOrderApi request 
-        |> Async.RunSynchronously  
-          
-    test <@ output.HttpStatusCode = 200 @>
