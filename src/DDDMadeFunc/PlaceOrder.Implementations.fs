@@ -366,10 +366,10 @@ let freeVipShipping : FreeVipShipping =
 // -------------------------------
 
 let acknowledgeOrder : AcknowledgeOrder = 
-    fun createAcknowledgmentLetter SendAcknowledgment PricedOrderWithShipping ->
-        let pricedOrder = PricedOrderWithShipping.PricedOrder
+    fun createAcknowledgmentLetter sendAcknowledgment pricedOrderWithShipping ->
+        let pricedOrder = pricedOrderWithShipping.PricedOrder
 
-        let letter = createAcknowledgmentLetter PricedOrderWithShipping
+        let letter = createAcknowledgmentLetter pricedOrderWithShipping
         let acknowledgment = {
             EmailAddress = pricedOrder.CustomerInfo.EmailAddress
             Letter = letter
@@ -377,7 +377,7 @@ let acknowledgeOrder : AcknowledgeOrder =
 
         // if the acknowledgement was successfully sent,
         // return the corresponding event, else return None
-        match SendAcknowledgment acknowledgment with
+        match sendAcknowledgment acknowledgment with
         | Sent ->
             let event = {
                 OrderId = pricedOrder.OrderId
