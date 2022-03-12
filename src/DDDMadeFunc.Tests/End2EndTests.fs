@@ -66,18 +66,18 @@ let ``PlaceOrder Workflow should succed with valid input`` () =
 let invalidcustomerInfoDto : CustomerInfoDto = {
        FirstName = "Jesséxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
        LastName = "Juniorxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
-       EmailAddress = "junior.jesse@gmail.com"
+       EmailAddress = "junior.jesse.gmail.com"
        VipStatus = "Normal"   
 }
 
 let invalidaddressDto : AddressDto = {
        AddressLine1 = "av flamboyant lote 22 bloco c"
        AddressLine2 = "vicnete pires lote 24"
-       AddressLine3 = ""
+       AddressLine3 = "Addressxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
        AddressLine4 = ""
        City = "Brasília"
        ZipCode = "70917000"
-       State = "DF"
+       State = "saeklrjbneas"
        Country = "Brazil"
 }
 
@@ -115,14 +115,15 @@ let ``PlaceOrder Workflow should fail with Ivalid input, showing all the error m
     test <@ output.HttpStatusCode = 401 @>
 
     //TODO: REDUCE THIS FUNCTIONS
-    let shouldcontain words (setence:string) = 
+    let shouldcontainAll words (setence:string) = 
         words 
         |> Seq.map (fun (x:string) -> setence.Contains(x))
         |> Seq.reduce (&&)
 
-        
+    let errorFields = 
+        ["FirstName" ; "LastName" ; "EmailAddress" ; "AddressLine3" ; "State"]
 
-    test <@ output.Body |> shouldcontain ["FirstName" ; "LastName"]  @>
+    test <@ output.Body |> shouldcontainAll  errorFields @>
 
 
 let failOnError = 

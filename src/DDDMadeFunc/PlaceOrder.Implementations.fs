@@ -21,26 +21,29 @@ open System.Numerics
 
 
 let toCustomerInfo (unvalidatedCustomerInfo : UnvalidatedCostumerInfo) =
+    let mapError a = 
+        Result.mapError  (ValidationError >> List.singleton) a
+        
     result {
         let! firstName = 
             unvalidatedCustomerInfo.FirstName
             |> String50.create "FirstName"
-            |> Result.mapError ValidationError // covnert creation error into ValidationError
+            |> mapError
 
-        let! lastName = 
+        and! lastName = 
             unvalidatedCustomerInfo.LastName
             |> String50.create "LastName"
-            |> Result.mapError ValidationError // convert creation error into ValidationError
+            |> mapError
 
-        let! emailAddress = 
+        and! emailAddress = 
             unvalidatedCustomerInfo.EmailAddress
             |> EmailAddress.create "EmailAddress"
-            |> Result.mapError ValidationError // convert creation error into ValidationError
+            |> mapError
 
-        let! vipStatus = 
+        and! vipStatus = 
             unvalidatedCustomerInfo.VipStatus 
             |> VipStatus.fromString "vipStatus"
-            |> Result.mapError ValidationError // convert creation error into ValidationError
+            |> mapError
 
         let customerInfo = {
             Name = {FirstName = firstName; LastName = lastName }
@@ -184,7 +187,7 @@ let validateOrder (*: ValidateOrder*) =
             and! customerInfo = 
                 unvalidatedOrder.CustomerInfo
                 |> toCustomerInfo
-                |> Result.mapError List.singleton
+                //|> Result.mapError List.singleton
                 |> AsyncResult.ofResult
                 //|> List.singleton
 
