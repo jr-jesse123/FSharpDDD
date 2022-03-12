@@ -356,7 +356,13 @@ module internal PlaceOrderErrorDto =
     let fromDomain (domainObj: PlaceOrderError) : PlaceOrderErrorDto =
         match domainObj with
         | Validation error ->
-            let (ValidationError msg) = error
+            let (ValidationError msg) = 
+                error 
+                |> List.reduce 
+                    (fun  (ValidationError err1) (ValidationError err2 ) -> 
+                        ValidationError (String.concat " ; " [|err1;err2|] )
+                        )
+
             { Code = "ValidationError"; Message = msg }
     
         | Pricing error -> 

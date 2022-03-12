@@ -170,42 +170,51 @@ let toValidateOrderLine checkProductExists (unvalidatedOrderLine:UnvalidatedOrde
     }
 
 
-let validateOrder : ValidateOrder = 
-    fun checkproductCodeExists checkAddressExists unvalidatedOrder ->
+let validateOrder (*: ValidateOrder*) = 
+    fun checkproductCodeExists checkAddressExists (unvalidatedOrder : UnvalidatedOrder) ->
         let toCheckedAddress = toCheckedAddress checkAddressExists
         asyncResult {
             let! orderId = 
                 unvalidatedOrder.OrderId
                 |> toOrderId
+                |> Result.mapError List.singleton
                 |> AsyncResult.ofResult
+                
 
-            let! customerInfo = 
+            and! customerInfo = 
                 unvalidatedOrder.CustomerInfo
                 |> toCustomerInfo
+                |> Result.mapError List.singleton
                 |> AsyncResult.ofResult
+                //|> List.singleton
 
-            let! checkedShippingAddres = 
+            and! checkedShippingAddres = 
                 unvalidatedOrder.ShippingAddress 
                 |> toCheckedAddress 
+                |> AsyncResult.mapError List.singleton
 
             let! shippingAddress = 
                 checkedShippingAddres
                 |> toAddress 
+                |> Result.mapError List.singleton
                 |> AsyncResult.ofResult
 
-            let! checkedBillingAddres = 
+            and! checkedBillingAddres = 
                 unvalidatedOrder.BillingAddress 
                 |> toCheckedAddress 
+                |> AsyncResult.mapError List.singleton
 
             let! billingAddress = 
                 checkedBillingAddres
                 |> toAddress
+                |> Result.mapError List.singleton
                 |> AsyncResult.ofResult
 
-            let! lines = 
+            and! lines = 
                 unvalidatedOrder.Lines
                 |> List.map (toValidateOrderLine checkproductCodeExists)
                 |> Result.sequence//convert a list of Results to a single Result //TODO: change this to applicative
+                |> Result.mapError List.singleton
                 |> AsyncResult.ofResult
 
 
@@ -462,12 +471,14 @@ let placeOrder
                     checkProductExists 
                     checkAddressExists 
                     unvalidatedOrder 
-                |> AsyncResult.mapError PlaceOrderError.Validation
+                |> AsyncResult.mapError (PlaceOrderError.Validation)
+                //|> List.singleton
 
             let! pricedOrder = 
                 priceOrder getProductPrice validatedOrder 
                 |> AsyncResult.ofResult
-                |> AsyncResult.mapError PlaceOrderError.Pricing
+                |> AsyncResult.mapError (PlaceOrderError.Pricing)
+                //|> List.singleton
 
             let pricedOrderWithShipping = 
                 pricedOrder 

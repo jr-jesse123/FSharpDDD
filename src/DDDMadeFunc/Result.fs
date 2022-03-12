@@ -62,8 +62,17 @@ module Result =
     let isOk = function |Ok _ -> true |Error _ -> false
 
 
-
+    let bindReturn fResult xResult = 
+        xResult |> Result.map fResult
     
+
+    let mergesources result1 result2 = 
+        match result1, result2 with
+        | Ok ok1, Ok ok2 -> Ok (ok1,ok2) // compiler will automatically de-tuple these - very cool!
+        | Error errs1, Ok _ -> Error errs1
+        | Ok _, Error errs2 -> Error errs2
+        | Error errs1, Error errs2 -> Error (errs1 @ errs2)  // accumulate errors
+
 
 [<AutoOpen>]
 module ResultComputationExpression  = 
@@ -82,6 +91,12 @@ module ResultComputationExpression  =
         member _.Return x = Ok x
 
         member this.Zero() = this.Return()
+
+        member _.BindReturn(result, f) =
+               Result.bindReturn f result
+
+        member _.MergeSources(result1, result2) =
+           Result.mergesources result1 result2
 
     let result = new ResultBuilder()
 
@@ -139,6 +154,7 @@ type AsyncResult<'Success,'Failure> = Async<Result<'Success, 'Failure>>
 module AsyncResult =
     let retn x : AsyncResult<'Success,'Failure> =   Async.retn (Ok x)
 
+
     /// apply a monadic function to an AsyncResult value
     let bind  (f: 'a -> AsyncResult<'b,'c>) (xAsyncResult: AsyncResult<'a,'c>) : AsyncResult<_,_> =
         async {
@@ -181,5 +197,20 @@ module AsyncResultComputationExpression =
         member _.Return(x)  = AsyncResult.retn x
 
         member _.Zero() = AsyncResult.retn ()
+
+        member _.BindReturn(result, f) =
+            result |> AsyncResult.map f
+
+        member _.MergeSources(xAR,yAR) =
+          let (<*>) = AsyncResult.applyA
+          let (<!>) = AsyncResult.map
+          let totuple x1 x2 = (x1,x2)
+
+          totuple <!> xAR <*> yAR
+
+
+        //member _.MergeSources(x:AsyncResult<_,_>,y:AsyncResult<_,_>) =
+        //        let 
+        //        AsyncResult.applyA 
 
     let asyncResult = AsyncResultbuilder()

@@ -124,7 +124,7 @@ type RemoteServiceError = {
 }
 
 type PlaceOrderError = 
-    | Validation of ValidationError
+    | Validation of ValidationError list
     | Pricing of PricingError
     | RemoteService of RemoteServiceError
 
