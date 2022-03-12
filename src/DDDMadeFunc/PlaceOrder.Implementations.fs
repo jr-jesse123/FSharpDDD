@@ -58,43 +58,43 @@ let toAddress (CheckedAddress checkedAddress)  =
         let! addressLine1 = 
             checkedAddress.AddressLine1 
             |> String50.create "AddressLine1"
-            |> Result.mapError ValidationError
+            |> Result.mapError (ValidationError >> List.singleton)
 
 
-        let! addressLine2 = 
+        and! addressLine2 = 
             checkedAddress.AddressLine2
             |> String50.createOption "AddressLine2"
-            |> Result.mapError ValidationError
+            |> Result.mapError (ValidationError >> List.singleton)
 
-        let! addressLine3 = 
+        and! addressLine3 = 
             checkedAddress.AddressLine3
             |> String50.createOption "AddressLine3"
-            |> Result.mapError ValidationError
+            |> Result.mapError (ValidationError >> List.singleton)
 
-        let! addressLine4 = 
+        and! addressLine4 = 
             checkedAddress.AddressLine4
             |> String50.createOption "AddressLine4"
-            |> Result.mapError ValidationError
+            |> Result.mapError (ValidationError >> List.singleton)
 
-        let! city = 
+        and! city = 
             checkedAddress.City
             |> String50.create "City"
-            |> Result.mapError ValidationError
+            |> Result.mapError (ValidationError >> List.singleton)
 
-        let! zipCode = 
+        and! zipCode = 
             checkedAddress.ZipCode
             |> ZipCode.create "ZipCode"
-            |> Result.mapError ValidationError
+            |> Result.mapError (ValidationError >> List.singleton)
 
-        let! state = 
+        and! state = 
             checkedAddress.State
             |> UsStateCode.create "State"
-            |> Result.mapError ValidationError
+            |> Result.mapError (ValidationError >> List.singleton)
 
-        let! country = 
+        and! country = 
             checkedAddress.Country
             |> String50.create "Country"
-            |> Result.mapError ValidationError
+            |> Result.mapError (ValidationError >> List.singleton)
 
         let address = Address.create (
             addressLine1, addressLine2, addressLine3, addressLine4, city, zipCode, state, country
@@ -193,22 +193,17 @@ let validateOrder (*: ValidateOrder*) =
                 |> toCheckedAddress 
                 |> AsyncResult.mapError List.singleton
 
-            let! shippingAddress = 
-                checkedShippingAddres
-                |> toAddress 
-                |> Result.mapError List.singleton
-                |> AsyncResult.ofResult
+            
+            //and! checkedBillingAddres = 
+              
 
-            and! checkedBillingAddres = 
+            and! billingAddress = 
                 unvalidatedOrder.BillingAddress 
                 |> toCheckedAddress 
-                |> AsyncResult.mapError List.singleton
-
-            let! billingAddress = 
-                checkedBillingAddres
-                |> toAddress
-                |> Result.mapError List.singleton
-                |> AsyncResult.ofResult
+                |> AsyncResult.mapError (List.singleton)
+                |> AsyncResult.bind (toAddress >> AsyncResult.ofResult )
+                //|> AsyncResult.mapError List.singleton
+                //|> AsyncResult.ofResult
 
             and! lines = 
                 unvalidatedOrder.Lines
@@ -221,6 +216,12 @@ let validateOrder (*: ValidateOrder*) =
             let pricingMethod = 
                 unvalidatedOrder.PromotionCode
                 |> PricingModule.createPricingMethod
+
+            let! shippingAddress = 
+                checkedShippingAddres
+                |> toAddress 
+                |> AsyncResult.ofResult
+
 
             let validatedOrder : ValidatedOrder = {
                 OrderId = orderId

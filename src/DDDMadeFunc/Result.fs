@@ -79,9 +79,6 @@ module ResultComputationExpression  =
 
     type ResultBuilder() =
 
-        member _.MergeSources(x,y) = 
-            ()
-
         member _.Bind(x,f) = 
             match x with 
             | Ok x -> f x
